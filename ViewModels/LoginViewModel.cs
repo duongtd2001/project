@@ -23,6 +23,7 @@ namespace project.ViewModels
         private SecureString _password;
         private string _errorMessage;
         private bool _isViewVisible = true;
+        public bool IsAuthenticated { get; set; }
 
         private IUserRepository userRepository;
 
@@ -70,7 +71,7 @@ namespace project.ViewModels
 
         public LoginViewModel()
         {
-            //userRepository = new UserRepository();
+            userRepository = new UserRepository();
             LoginCommand = new RelayCommand(ExecuteLoginCommand, CanExecuteLoginCommand);
             RecoverPasswordCommand = new RelayCommand(ExecuteRecoverPasswordCommand);
         }
@@ -92,17 +93,45 @@ namespace project.ViewModels
             //if (isValidUser)
             //{
             //    Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity(Username), null);
-                IsViewVisible = false;
+            //    IsViewVisible = false;
             //}
             //else
             //{
-                //ErrorMessage = "* Invalid username or password";
+            //    ErrorMessage = "* Invalid username or password";
             //}
+            string password = ConvertToUnsecureString(Password);
+            var isValidUser = userRepository.AuthenticateUser(new NetworkCredential(Username, password));
+            if (isValidUser)
+            {
+                Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity(Username), null);
+                IsViewVisible = false;
+                IsAuthenticated = true;
+            }
+            else
+            {
+                ErrorMessage = "* Invalid username or password";
+            }
         }
 
         public void ExecuteRecoverPasswordCommand()
         {
 
+        }
+        private string ConvertToUnsecureString(SecureString secureString)
+        {
+            IntPtr unmanagedString = IntPtr.Zero;
+            try
+            {
+                unmanagedString = System.Runtime.InteropServices.Marshal.SecureStringToBSTR(secureString);
+                return System.Runtime.InteropServices.Marshal.PtrToStringBSTR(unmanagedString);
+            }
+            finally
+            {
+                if (unmanagedString != IntPtr.Zero)
+                {
+                    System.Runtime.InteropServices.Marshal.ZeroFreeBSTR(unmanagedString);
+                }
+            }
         }
     }
 }

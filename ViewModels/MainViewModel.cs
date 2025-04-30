@@ -39,16 +39,14 @@ namespace project.ViewModels
         public ICommand ShowHomeViewCommand {  get; }
         public ICommand ShowCustomerViewCommand {  get; }
 
-        public MainViewModel()
+        public MainViewModel(UserRepository _user)
         {
-            userRepository = new UserRepository();
+            userRepository = _user;
             CurrentUserAccount = new UserAccountModel();
-            ReadExcelData readExcelData = new ReadExcelData();  
-            //Initialize commands
             ShowHomeViewCommand = new RelayCommand(ExecuteShowHomeViewCommand);
             ShowCustomerViewCommand = new RelayCommand(ExecuteShowCustomerViewCommand);
 
-            //LoadCurrentUserData();
+            LoadCurrentUserData();
             CurrentChildView = new HomeView();
         }
 
@@ -68,16 +66,31 @@ namespace project.ViewModels
 
         private void LoadCurrentUserData()
         {
+            // SQL
+
+            //var user = userRepository.GetByUsername(Thread.CurrentPrincipal.Identity.Name);
+            //if(user != null)
+            //{
+            //    CurrentUserAccount.Username = user.Name;
+            //    CurrentUserAccount.DisplayName = $"{user.Name} {user.Name}";
+            //    CurrentUserAccount.ProfilePicture = null;
+            //}
+            //else
+            //{
+            //    CurrentUserAccount.DisplayName = "Invalid user, not logger in";
+            //}
+
+            // Excel
             var user = userRepository.GetByUsername(Thread.CurrentPrincipal.Identity.Name);
-            if(user != null)
+            if (user.Name != null)
             {
-                CurrentUserAccount.Username = user.Name;
-                CurrentUserAccount.DisplayName = $"{user.Name} {user.Name}";
+                CurrentUserAccount.Username = user.Name; 
+                CurrentUserAccount.DisplayName = user.Name;
                 CurrentUserAccount.ProfilePicture = null;
             }
             else
             {
-                CurrentUserAccount.DisplayName = "Invalid user, not logger in";
+                CurrentUserAccount.DisplayName = "Invalid user, not logged in";
             }
         }
      }

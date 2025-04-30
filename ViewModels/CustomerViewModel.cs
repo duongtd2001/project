@@ -10,5 +10,6 @@ namespace project.ViewModels
 {
     public class CustomerViewModel : Screen
     { 
+
     }
 }

@@ -13,9 +13,7 @@
         Background="Transparent"
         AllowsTransparency="True">
 
-    <Window.DataContext>
-        <viewModel:MainViewModel/>
-    </Window.DataContext>
+    
 
     <Window.Resources>
         

@@ -1,8 +1,11 @@
-﻿using project.Models;
+﻿using ExcelDataReader;
+using project.Class;
+using project.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -12,6 +15,9 @@ namespace project.Repositories
 {
     public class UserRepository : RepositoryBase, IUserRepository
     {
+        private ReadExcelData readExcelData;
+        private UserModel _user;
+        //
         public void Add(UserModel userModel)
         {
             string query = @"INSERT INTO dbo.ASS_LX (Machine, ID, Name, PO, LotNo, Time) 
@@ -34,20 +40,53 @@ namespace project.Repositories
 
         public bool AuthenticateUser(NetworkCredential credential)
         {
-            bool validUser;
-            using (var connection = GetConnection())
-            using (var command = new SqlCommand())
+            // SQL
+            //bool validUser;
+            //using (var connection = GetConnection())
+            //using (var command = new SqlCommand())
+            //{
+            //    //connection.Open();
+            //    //command.Connection = connection;
+            //    command.CommandText = "select *from [User] where username=@username and [password]=@password";
+            //    command.Parameters.Add("@username", SqlDbType.NVarChar).Value = credential.UserName;
+            //    command.Parameters.Add("@password", SqlDbType.NVarChar).Value = credential.Password;
+            //    validUser = command.ExecuteScalar() == null ? false : true;
+            //}
+
+            //return validUser;
+
+            readExcelData = new ReadExcelData();
+            //Excel
+            bool validUser = false;
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+            using (var stream = File.Open(readExcelData.pathExcel, FileMode.Open, FileAccess.Read))
+            using (var reader = ExcelReaderFactory.CreateReader(stream))
             {
-                //connection.Open();
-                //command.Connection = connection;
-                command.CommandText = "select *from [User] where username=@username and [password]=@password";
-                command.Parameters.Add("@username", SqlDbType.NVarChar).Value = credential.UserName;
-                command.Parameters.Add("@password", SqlDbType.NVarChar).Value = credential.Password;
-                validUser = command.ExecuteScalar() == null ? false : true;
+                var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
+                {
+                    ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = true }
+                });
+
+                var table = dataSet.Tables[0];
+
+                foreach (DataRow row in table.Rows)
+                {
+                    if (row[2].ToString() == credential.UserName && row[1].ToString() == credential.Password)
+                    {
+                        validUser = true;
+                        _user = new UserModel
+                        {
+                            Name = row[2].ToString()
+                        };
+                        break;
+                    }
+                }
             }
+
             return validUser;
         }
-
+        
         public void Edit(UserModel userModel)
         {
             string query = @"UPDATE dbo.ASS_LX 
@@ -81,31 +120,12 @@ namespace project.Repositories
 
         public UserModel GetByUsername(string username)
         {
-            UserModel user = null;
-            //using (var connection = GetConnection())
-            //using (var command = new SqlCommand())
-            //{
-            //    connection.Open();
-            //    command.Connection = connection;
-            //    command.CommandText = "select *from [User] where username=@username";
-            //    command.Parameters.Add("@username", SqlDbType.NVarChar).Value = username;
-            //    using (var reader = command.ExecuteReader())
-            //    {
-            //        if (reader.Read())
-            //        {
-            //            user = new UserModel()
-            //            {
-            //                Id = reader[0].ToString(),
-            //                Username = reader[1].ToString(),
-            //                Password = string.Empty,
-            //                Name = reader[3].ToString(),
-            //                LastName = reader[4].ToString(),
-            //                Email = reader[5].ToString(),
-            //            };
-            //        }
-            //    }
-            //}
-            return user;
+            if (_user != null && _user.Name == username)
+            {
+                return _user;
+            }
+
+            return null;
         }
 
         public void Remove(string Id)

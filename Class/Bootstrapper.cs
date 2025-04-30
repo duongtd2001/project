@@ -37,6 +37,7 @@ namespace project.Class
                 .ForEach(viewModelType => _container.RegisterPerRequest(
                     viewModelType, viewModelType.ToString(), viewModelType
                     ));
+            //_container.PerRequest<MainViewModel>();
             base.Configure();
             _container.Singleton<IEventAggregator, EventAggregator>();
         }
