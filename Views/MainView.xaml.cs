@@ -14,17 +14,20 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
+using System.Windows.Media.Animation;
 
 namespace project.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainView : Window
     {
-        public MainWindow()
+        public MainView()
         {
             InitializeComponent();
+            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
+            fadeIn.Begin(this);
         }
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
@@ -46,11 +49,15 @@ namespace project.Views
 
         private void bnMinimize_Click(object sender, RoutedEventArgs e)
         {
+            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
+            fadeIn.Begin(this);
             this.WindowState = WindowState.Minimized;
         }
 
         private void bnMaximine_Click(object sender, RoutedEventArgs e)
         {
+            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
+            fadeIn.Begin(this);
             if (this.WindowState == WindowState.Normal)
             {
                 this.WindowState = WindowState.Maximized;
@@ -59,6 +66,12 @@ namespace project.Views
             {
                 this.WindowState = WindowState.Normal;
             }
+        }
+        private void UserMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as Button;
+            btn.ContextMenu.PlacementTarget = btn;
+            btn.ContextMenu.IsOpen = true;
         }
     }
 }

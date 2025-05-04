@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:project.Views"
         xmlns:viewModel="clr-namespace:project.ViewModels" 
         xmlns:customcontrols="clr-namespace:project.CustomControls"
         mc:Ignorable="d"
@@ -14,12 +13,13 @@
         Background="Transparent"
         AllowsTransparency="True"
         MouseDown="Window_MouseDown">
-    <Window.DataContext>
-        <viewModel:LoginViewModel/>
-    </Window.DataContext>
     
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibility"/>
+        <Storyboard x:Key="FadeInStoryboard">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+             From="0" To="0.95" Duration="0:0:0.8"/>
+        </Storyboard>
     </Window.Resources>
 
     <Window.Visibility>
@@ -215,9 +215,9 @@
                                FontFamily="Montserrat"                             
                                Margin="0,10,0,0"
                                TextWrapping="Wrap"/>
-                    
-                    <Button x:Name="btnLogin"  
-                            Command="{Binding LoginCommand}"
+
+                    <Button 
+                            x:Name="LoginCommand"
                             BorderThickness="0"
                             Content="LOG IN"
                             Foreground="White"

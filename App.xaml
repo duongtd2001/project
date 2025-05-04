@@ -3,13 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:project"
              xmlns:viewmodel="clr-namespace:project.ViewModels"
-             xmlns:class="clr-namespace:project.Class"
-             Startup="ApplicationStart">
-    <!--Startup="ApplicationStart"-->
+             xmlns:services="clr-namespace:project.Services">
     <Application.Resources>
         <ResourceDictionary>
-            
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <services:Bootstrapper x:Key="Bootstrapper"></services:Bootstrapper>
+                </ResourceDictionary>
                 <ResourceDictionary Source="/Styles/UIColors.xaml"/>
                 <ResourceDictionary Source="/Styles/ButtonStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>

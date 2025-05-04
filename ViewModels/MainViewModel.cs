@@ -11,13 +11,15 @@ using project.Models;
 using project.Repositories;
 using Caliburn.Micro;
 using System.Windows.Controls;
-using project.Class;
+using project.Services;
 using project.Views;
+using System.Xml.Linq;
+using System.Drawing;
 
 namespace project.ViewModels
 {
      public class MainViewModel : Conductor<object>
-     {
+    {
         //Fields
         private UserAccountModel _currentUserAccount;
         private UserControl _currentChildView;
@@ -25,7 +27,7 @@ namespace project.ViewModels
         private IconChar _icon;
 
 
-        private IUserRepository userRepository;
+        private UserRepository userRepository;
         // properties
         public UserAccountModel CurrentUserAccount { get => _currentUserAccount; set { _currentUserAccount = value; NotifyOfPropertyChange(() => CurrentUserAccount); } }
        
@@ -34,30 +36,27 @@ namespace project.ViewModels
         public string Caption { get => _caption; set { _caption = value; NotifyOfPropertyChange(()=> Caption); } } 
 
         public IconChar Icon { get => _icon; set { _icon = value; NotifyOfPropertyChange(()=> Icon); } }
-
         // Commands
-        public ICommand ShowHomeViewCommand {  get; }
-        public ICommand ShowCustomerViewCommand {  get; }
-
-        public MainViewModel(UserRepository _user)
+        //public ICommand ShowHomeViewCommand {  get; }
+        //public ICommand ShowCustomerViewCommand {  get; }
+        public MainViewModel()
         {
-            userRepository = _user;
+            userRepository = new UserRepository();
             CurrentUserAccount = new UserAccountModel();
-            ShowHomeViewCommand = new RelayCommand(ExecuteShowHomeViewCommand);
-            ShowCustomerViewCommand = new RelayCommand(ExecuteShowCustomerViewCommand);
-
+            //ShowHomeViewCommand = new RelayCommand(ExecuteShowHomeViewCommand);
+            //ShowCustomerViewCommand = new RelayCommand(ExecuteShowCustomerViewCommand);
+            //bmp = new Bitmap(@"C:\Users\duong\Documents\isme.jpg")
             LoadCurrentUserData();
             CurrentChildView = new HomeView();
         }
 
-        private void ExecuteShowCustomerViewCommand()
+        public void ShowHomeViewCommand()
         {
             CurrentChildView = new CustomerView();
             Caption = "Customers";
             Icon = IconChar.UserGroup;
         }
-
-        private void ExecuteShowHomeViewCommand()
+        public void ShowCustomerViewCommand()
         {
             CurrentChildView = new HomeView();
             Caption = "Dashboard";
@@ -66,31 +65,18 @@ namespace project.ViewModels
 
         private void LoadCurrentUserData()
         {
-            // SQL
-
-            //var user = userRepository.GetByUsername(Thread.CurrentPrincipal.Identity.Name);
-            //if(user != null)
-            //{
-            //    CurrentUserAccount.Username = user.Name;
-            //    CurrentUserAccount.DisplayName = $"{user.Name} {user.Name}";
-            //    CurrentUserAccount.ProfilePicture = null;
-            //}
-            //else
-            //{
-            //    CurrentUserAccount.DisplayName = "Invalid user, not logger in";
-            //}
-
             // Excel
-            var user = userRepository.GetByUsername(Thread.CurrentPrincipal.Identity.Name);
-            if (user.Name != null)
+            var excelReader = new ReadExcelData();
+            var user = excelReader.FindProductByID(Thread.CurrentPrincipal.Identity.Name);
+            if (user != null)
             {
-                CurrentUserAccount.Username = user.Name; 
+                CurrentUserAccount.Username = user.Name;
                 CurrentUserAccount.DisplayName = user.Name;
-                CurrentUserAccount.ProfilePicture = null;
+                CurrentUserAccount.ProfilePicture = @"C:\Users\duong\Documents\isme.jpg";
             }
             else
             {
-                CurrentUserAccount.DisplayName = "Invalid user, not logged in";
+                CurrentUserAccount.DisplayName = "Invalid user, not logger in";
             }
         }
      }

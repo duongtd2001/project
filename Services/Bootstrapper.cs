@@ -5,22 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Caliburn.Micro;
+using project.Models;
+using project.Repositories;
 using project.ViewModels;
 using project.Views;
 
-namespace project.Class
+namespace project.Services
 {
     public class Bootstrapper : BootstrapperBase
     {
-        private SimpleContainer _container = new SimpleContainer();
+        private SimpleContainer _container;//  = new SimpleContainer();
         public Bootstrapper()
         {
+            _container = new SimpleContainer();
             Initialize();
+            //_container = new SimpleContainer();
         }
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
             base.OnStartup(sender, e);
-            DisplayRootViewForAsync<MainViewModel>();
+            DisplayRootViewForAsync<LoginViewModel_origin>();
+            
         }
         protected override void Configure()
         {
@@ -28,18 +33,17 @@ namespace project.Class
 
             _container
                 .Singleton<IWindowManager, WindowManager>()
-                .Singleton<IEventAggregator, EventAggregator>();
-
-            GetType().Assembly.GetTypes()
+                .Singleton<IEventAggregator, EventAggregator>()
+                .PerRequest<IUserRepository, UserRepository>();
+            _container.PerRequest<LoginViewModel_origin>();
+            _container.Singleton<MainViewModel>();
+            /*GetType().Assembly.GetTypes()
                 .Where(type => type.IsClass)
-                .Where(type => type.Name.EndsWith("ViewModels"))
+                .Where(type => type.Name.EndsWith("ViewModel"))
                 .ToList()
                 .ForEach(viewModelType => _container.RegisterPerRequest(
                     viewModelType, viewModelType.ToString(), viewModelType
-                    ));
-            //_container.PerRequest<MainViewModel>();
-            base.Configure();
-            _container.Singleton<IEventAggregator, EventAggregator>();
+                    ));*/
         }
         protected override void OnExit(object sender, EventArgs e)
         {

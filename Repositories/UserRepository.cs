@@ -1,5 +1,5 @@
 ﻿using ExcelDataReader;
-using project.Class;
+using project.Services;
 using project.Models;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace project.Repositories
     public class UserRepository : RepositoryBase, IUserRepository
     {
         private ReadExcelData readExcelData;
-        private UserModel _user;
+        //private UserModel _user;
         //
         public void Add(UserModel userModel)
         {
@@ -72,13 +72,9 @@ namespace project.Repositories
 
                 foreach (DataRow row in table.Rows)
                 {
-                    if (row[2].ToString() == credential.UserName && row[1].ToString() == credential.Password)
+                    if (row[1].ToString() == credential.UserName && row[1].ToString() == credential.Password)
                     {
                         validUser = true;
-                        _user = new UserModel
-                        {
-                            Name = row[2].ToString()
-                        };
                         break;
                     }
                 }
@@ -120,12 +116,35 @@ namespace project.Repositories
 
         public UserModel GetByUsername(string username)
         {
-            if (_user != null && _user.Name == username)
-            {
-                return _user;
-            }
+            //UserModel user = null;
+            ////Excel
+            //readExcelData = new ReadExcelData();
+            //System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
-            return null;
+            //using (var stream = File.Open(readExcelData.pathExcel, FileMode.Open, FileAccess.Read))
+            //using (var reader = ExcelReaderFactory.CreateReader(stream))
+            //{
+            //    var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
+            //    {
+            //        ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = true }
+            //    });
+
+            //    var table = dataSet.Tables[0];
+
+            //    foreach (DataRow row in table.Rows)
+            //    {
+            //        if (row[2].ToString() == username)
+            //        {
+            //            user = new UserModel
+            //            {
+            //                Name = row[2].ToString()
+            //            };
+            //            break;
+            //        }
+            //    }
+            //}
+            //return user;
+            throw new NotImplementedException();
         }
 
         public void Remove(string Id)

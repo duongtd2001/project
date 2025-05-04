@@ -7,13 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ExcelDataReader;
+using System.Diagnostics;
 
-namespace project.Class
+namespace project.Services
 {
     public class ReadExcelData
     {
         public string basePath;
         public string pathExcel;
+        Stopwatch sw = new Stopwatch();
         public ReadExcelData()
         {
             basePath = AppContext.BaseDirectory;
@@ -46,8 +48,8 @@ namespace project.Class
                         };
                     }
                 }
+                
             }
-
             return null;
         }
     }
