@@ -12,11 +12,6 @@
         WindowStyle="None"
         Background="Transparent"
         AllowsTransparency="True">
-
-    <Window.DataContext>
-        <viewModel:MainViewModel/>
-    </Window.DataContext>
-
     <Window.Resources>
         <DataTemplate DataType="{x:Type viewModel:HomeViewModel}">
             <local:HomeView/>
@@ -28,6 +23,12 @@
         <Storyboard x:Key="FadeInStoryboard">
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
                              From="0" To="1" Duration="0:0:0.25"/>
+        </Storyboard>
+
+        <Storyboard x:Key="FadeOutStoryboard">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                 From="1" To="0"
+                 Duration="0:0:0.5" FillBehavior="Stop"/>
         </Storyboard>
     </Window.Resources>
 
@@ -82,7 +83,7 @@
                     <RadioButton Style="{StaticResource menuButton}"
                                  Tag="{StaticResource color1}"
                                  IsChecked="True"
-                                 Command="{Binding ShowHomeViewCommand}">
+                                 x:Name="ShowHomeViewCommand">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconImage Icon="Home" Style="{StaticResource menuButtonIcon}"/>
                             <TextBlock Text="Dashboard" Style="{StaticResource menuButtonText}"/>
@@ -90,7 +91,7 @@
                     </RadioButton>
                     <RadioButton Style="{StaticResource menuButton}"
                                  Tag="{StaticResource color2}"
-                                 Command="{Binding ShowCustomerViewCommand}">
+                                 x:Name="ShowCustomerViewCommand">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconImage Icon="UserGroup" Style="{StaticResource menuButtonIcon}"/>
                             <TextBlock Text="Customers" Style="{StaticResource menuButtonText}"/>
@@ -159,8 +160,7 @@
                                 MouseEnter="pnControlBar_MouseEnter">
                         <Button x:Name="bnClose"
                                 Style="{StaticResource controlButton}"
-                                Tag="{StaticResource color4}"
-                                Click="bnClose_Click">
+                                Tag="{StaticResource color4}">
                             <fa:IconImage Icon="Xmark" Style="{StaticResource controlButtonIcon}"/>
                         </Button>
                         <Button x:Name="bnMaximine"
@@ -171,8 +171,7 @@
                         </Button>
                         <Button x:Name="bnMinimize"
                                 Style="{StaticResource controlButton}"
-                                Tag="{StaticResource color6}"
-                                Click="bnMinimize_Click">
+                                Tag="{StaticResource color6}">
                             <fa:IconImage Icon="WindowMinimize" Width="12" Style="{StaticResource controlButtonIcon}"/>
                         </Button>
                     </StackPanel>
@@ -210,7 +209,7 @@
                                     Margin="0,0,10,0">
                             
                             <Button Style="{StaticResource iconButton}"
-                                    Tag="{StaticResource color1}" Click="UserMenuButton_Click">
+                                    Tag="{StaticResource color1}">
                                 <fa:IconImage Icon="AngleDown" 
                                               Height="12"
                                               Width="12"

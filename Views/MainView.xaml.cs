@@ -28,6 +28,7 @@ namespace project.Views
             InitializeComponent();
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);
+            this.StateChanged += Window_StateChanged;
         }
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
@@ -41,19 +42,31 @@ namespace project.Views
         {
             this.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
         }
-
-        private void bnClose_Click(object sender, RoutedEventArgs e)
+        public void CloseWithFade()
         {
-            Application.Current.Shutdown();
+            Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
+            fadeOut.Completed += (s, e) =>
+            {
+                this.Close();
+            };
+            fadeOut.Begin(this);
         }
-
-        private void bnMinimize_Click(object sender, RoutedEventArgs e)
+        //private void bnMinimize_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Storyboard fadeIn = (Storyboard)this.Resources["FadeOutStoryboard"];
+        //    fadeIn.Begin(this);
+        //    this.WindowState = WindowState.Minimized;
+        //}
+        public void MinimizeWithFade()
         {
-            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
-            fadeIn.Begin(this);
-            this.WindowState = WindowState.Minimized;
+            Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
+            fadeOut.Completed += (s, e) =>
+            {
+                this.WindowState = WindowState.Minimized;
+                this.Opacity = 1;
+            };
+            fadeOut.Begin(this);
         }
-
         private void bnMaximine_Click(object sender, RoutedEventArgs e)
         {
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
@@ -67,11 +80,10 @@ namespace project.Views
                 this.WindowState = WindowState.Normal;
             }
         }
-        private void UserMenuButton_Click(object sender, RoutedEventArgs e)
+        private void Window_StateChanged(object sender, EventArgs e)
         {
-            var btn = sender as Button;
-            btn.ContextMenu.PlacementTarget = btn;
-            btn.ContextMenu.IsOpen = true;
+            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
+            fadeIn.Begin(this);
         }
     }
 }

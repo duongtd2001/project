@@ -1,31 +1,31 @@
 ﻿<Window x:Class="project.Views.LoginView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="clr-namespace:project.ViewModels" 
         xmlns:customcontrols="clr-namespace:project.CustomControls"
-        mc:Ignorable="d"
         Title="LoginView" Height="550" Width="800"
         WindowStyle="None"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
         AllowsTransparency="True"
-        MouseDown="Window_MouseDown">
+        >
     
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibility"/>
+        
         <Storyboard x:Key="FadeInStoryboard">
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
              From="0" To="0.95" Duration="0:0:0.8"/>
         </Storyboard>
+
+        <Storyboard x:Key="FadeOutStoryboard">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                         From="1" To="0"
+                         Duration="0:0:0.5" FillBehavior="Stop"/>
+        </Storyboard>
     </Window.Resources>
 
-    <Window.Visibility>
-        <Binding Path="IsViewVisible" Mode="TwoWay" Converter="{StaticResource BooleanToVisibility}"/>
-        <!--Converter="{StaticResource BooleanToVisibility}"-->
-    </Window.Visibility>
+   
 
     <Border CornerRadius="12">
         <Border.Background>
@@ -75,16 +75,14 @@
                                VerticalAlignment="Center"
                                Margin="10,0,0,0"/>
 
-                    <Button x:Name="btnMinimize"                           
+                    <Button x:Name="bnMinimize"                           
                             BorderThickness="0"
                             Content="-"
                             Foreground="White"
                             FontSize="16"
                             FontFamily="Montserrat"
                             Cursor="Hand"
-                            Grid.Column="1"
-                            Click="btnMinimize_Click">
-
+                            Grid.Column="1">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="#28AEED"/>
@@ -109,16 +107,14 @@
 
                     </Button>
 
-                    <Button x:Name="btnClose"                          
+                    <Button x:Name="bnClose"                          
                             BorderThickness="0"
                             Content="X"
                             Foreground="White"
                             FontSize="12"
                             FontFamily="Montserrat"
                             Cursor="Hand"
-                            Grid.Column="2"
-                            Click="btnClose_Click">
-
+                            Grid.Column="2">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="#DA34AE"/>
@@ -216,8 +212,7 @@
                                Margin="0,10,0,0"
                                TextWrapping="Wrap"/>
 
-                    <Button 
-                            x:Name="LoginCommand"
+                    <Button x:Name="LoginCommand"
                             BorderThickness="0"
                             Content="LOG IN"
                             Foreground="White"

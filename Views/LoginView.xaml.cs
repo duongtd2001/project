@@ -25,6 +25,7 @@ namespace project.Views
             InitializeComponent();
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);
+            this.StateChanged += Window_StateChanged;
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -32,15 +33,29 @@ namespace project.Views
             if (e.LeftButton == MouseButtonState.Pressed)
                 DragMove();
         }
-
-        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        public void MinimizeWithFade()
         {
-            WindowState = WindowState.Minimized;
+            Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
+            fadeOut.Completed += (s, e) =>
+            {
+                this.WindowState = WindowState.Minimized;
+                this.Opacity = 1;
+            };
+            fadeOut.Begin(this);
         }
-
-        private void btnClose_Click(object sender, RoutedEventArgs e)
+        public void CloseWithFade()
         {
-            Application.Current.Shutdown();
+            Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
+            fadeOut.Completed += (s, e) =>
+            {
+                this.Close();
+            };
+            fadeOut.Begin(this);
+        }
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
+            fadeIn.Begin(this);
         }
     }
 }
