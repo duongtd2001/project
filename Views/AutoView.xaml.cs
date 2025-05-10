@@ -17,16 +17,16 @@ using System.Windows.Shapes;
 namespace project.Views
 {
     /// <summary>
-    /// Interaction logic for HomeView.xaml
+    /// Interaction logic for AutoView.xaml
     /// </summary>
-    public partial class HomeView : UserControl
+    public partial class AutoView : UserControl
     {
-        public HomeView()
+        public AutoView()
         {
             InitializeComponent();
-            Loaded += HomeView_Loaded;
+            Loaded += AutoView_Loaded;
         }
-        private void HomeView_Loaded(object sender, RoutedEventArgs e)
+        private void AutoView_Loaded(object sender, RoutedEventArgs e)
         {
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);

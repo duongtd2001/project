@@ -10,6 +10,13 @@ namespace project.ViewModels
 {
     public class CustomerViewModel : Screen
     { 
+        public CustomerViewModel()
+        {
 
+        }
+        public void SearchCommand()
+        {
+
+        }
     }
 }

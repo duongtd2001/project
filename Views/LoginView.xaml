@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
         AllowsTransparency="True"
-        >
+        MouseDown="Window_MouseDown">
     
     <Window.Resources>
         
@@ -144,8 +144,8 @@
                             Orientation="Vertical"
                             Margin="0,35,0,0">
 
-                    <Image Source="/Images/spc.png"
-                           Width="100" Height="100"/>
+                    <Image Source="/Images/LogoMisumi.png"
+                           Width="200" Height="100"/>
 
                     <TextBlock Text="Welcome to MiSUMi"
                                Foreground="White"
@@ -192,18 +192,39 @@
                         </TextBox.Background>
                     </TextBox>
 
-                    <TextBlock Text="Password"
+                    <TextBlock Text="PO"
                                Foreground="DarkGray"
                                FontSize="12"
                                FontWeight="Medium"
                                FontFamily="Montserrat"                             
                                Margin="0,15,0,0"/>
+                    
 
-                    <customcontrols:ucBindablePasswordBox Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    <!--<customcontrols:ucBindablePasswordBox Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                           Height="28"
                                                           Margin="0,5,0,0">
-                    </customcontrols:ucBindablePasswordBox>
+                    </customcontrols:ucBindablePasswordBox>-->
 
+                    <TextBox x:Name="txtPO"
+                            Text="{Binding PO, UpdateSourceTrigger=PropertyChanged}"
+                            FontSize="13"
+                            FontWeight="Medium"
+                            FontFamily="Montserrat"                            
+                            Foreground="White"
+                            CaretBrush="LightGray"
+                            BorderBrush="DarkGray"
+                            BorderThickness="0,0,0,2"
+                            Height="28"
+                            VerticalContentAlignment="Center"
+                            Margin="0,5,0,0"
+                            Padding="20,0,0,0">
+
+                        <TextBox.Background>
+                            <ImageBrush ImageSource="/Images/user-icon.png"
+                                        Stretch="None"
+                                        AlignmentX="Left"/>
+                        </TextBox.Background>
+                    </TextBox>
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="#D7596D"
                                FontSize="12"

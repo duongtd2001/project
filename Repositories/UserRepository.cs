@@ -57,7 +57,7 @@ namespace project.Repositories
 
                 foreach (DataRow row in table.Rows)
                 {
-                    if (row[1].ToString() == credential.UserName && row[1].ToString() == credential.Password)
+                    if (row[1].ToString() == credential.UserName)
                     {
                         validUser = true;
                         break;

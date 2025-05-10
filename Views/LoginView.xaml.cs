@@ -25,10 +25,10 @@ namespace project.Views
             InitializeComponent();
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);
-            this.StateChanged += Window_StateChanged;
+            StateChanged += Window_StateChanged;
         }
 
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        public void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 DragMove();

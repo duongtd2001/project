@@ -15,7 +15,6 @@ namespace project.Services
     {
         public string basePath;
         public string pathExcel;
-        Stopwatch sw = new Stopwatch();
         public ReadExcelData()
         {
             basePath = AppContext.BaseDirectory;

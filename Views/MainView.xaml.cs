@@ -51,12 +51,6 @@ namespace project.Views
             };
             fadeOut.Begin(this);
         }
-        //private void bnMinimize_Click(object sender, RoutedEventArgs e)
-        //{
-        //    Storyboard fadeIn = (Storyboard)this.Resources["FadeOutStoryboard"];
-        //    fadeIn.Begin(this);
-        //    this.WindowState = WindowState.Minimized;
-        //}
         public void MinimizeWithFade()
         {
             Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
@@ -66,6 +60,10 @@ namespace project.Views
                 this.Opacity = 1;
             };
             fadeOut.Begin(this);
+        }
+        private void bnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            MinimizeWithFade();
         }
         private void bnMaximine_Click(object sender, RoutedEventArgs e)
         {

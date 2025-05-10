@@ -15,20 +15,21 @@ using project.Services;
 using project.Views;
 using System.Xml.Linq;
 using System.Drawing;
+using System.Windows.Media.Animation;
 
 namespace project.ViewModels
 {
      public class MainViewModel : Conductor<object>, IViewAware
     {
         //Fields
-        private UserAccountModel _currentUserAccount;
+        private string _currentUserAccount;
         private UserControl _currentChildView;
         private string _caption;
         private IconChar _icon;
 
         private UserRepository userRepository;
         // properties
-        public UserAccountModel CurrentUserAccount { get => _currentUserAccount; set { _currentUserAccount = value; NotifyOfPropertyChange(() => CurrentUserAccount); } }
+        public string CurrentUserAccount { get => _currentUserAccount; set { _currentUserAccount = value; NotifyOfPropertyChange(() => CurrentUserAccount); } }
        
         public UserControl CurrentChildView { get => _currentChildView; set { _currentChildView = value; NotifyOfPropertyChange(()=>  CurrentChildView); } }    
        
@@ -48,62 +49,86 @@ namespace project.ViewModels
             return _view;
         }
 
+        private AutoViewModel autoViewModel;
+        private CustomerViewModel customerViewModel;
+        private HomeViewModel homeViewModel;
+        private ManualViewModel manualViewModel;
+        private ReportViewModel reportViewModel;
+        private SettingViewModel settingViewModel;
+
         public MainViewModel()
         {
-           // ActivateItemAsync(new CustomerViewModel());
-            userRepository = new UserRepository();
-            CurrentUserAccount = new UserAccountModel();
-            LoadCurrentUserData();
-            CurrentChildView = new HomeView();
+            autoViewModel = new AutoViewModel();
+            customerViewModel = new CustomerViewModel();
+            homeViewModel = new HomeViewModel();
+            manualViewModel = new ManualViewModel();
+            reportViewModel = new ReportViewModel();
+            settingViewModel = new SettingViewModel();
 
+            userRepository = new UserRepository();
+            LoadCurrentUserData();
+            CurrentChildView = new AutoView();
         }
 
         public void ShowHomeViewCommand()
         {
-            if (_view is MainView window)
-            {
-                CurrentChildView = new HomeView();
-                Caption = "Dashboard";
-                Icon = IconChar.Home;
-            }
+            ActivateItemAsync(homeViewModel);
+            Caption = "Dashboard";
+            Icon = IconChar.Home;
         }
         public void ShowCustomerViewCommand()
         {
-
-            CurrentChildView = new CustomerView();
-            Caption = "Dashboard";
+            ActivateItemAsync(customerViewModel);
+            Caption = "Customer";
             Icon = IconChar.UserGroup;
         }
-
+        public void ShowReportCommand()
+        {
+            ActivateItemAsync(reportViewModel);
+            Caption = "Report";
+            Icon = IconChar.PieChart;
+        }
+        public void ShowSettingCommand()
+        {
+            ActivateItemAsync(settingViewModel);
+            Caption = "Setting";
+            Icon = IconChar.Tools;
+        }
+        public void ShowAutoCommand()
+        {
+            ActivateItemAsync(autoViewModel);
+            Caption = "Auto";
+            Icon = IconChar.Play;
+        }
+        public void ShowManualCommand()
+        {
+            ActivateItemAsync(manualViewModel);
+            Caption = "Manual";
+            Icon = IconChar.Hand;
+        }
         public void bnClose()
         {
-            if (_view is MainView window)
+            if (MessageBox.Show("Are you sure you want to exit?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.OK)
             {
-                window.CloseWithFade();
+                if (_view is MainView window)
+                {
+                    window.CloseWithFade();
+                }
             }
-        }
-        public void bnMinimize()
-        {
-            if (_view is MainView window)
-            {
-                window.MinimizeWithFade();
-            }
+            else
+                return;
+            
         }
         private void LoadCurrentUserData()
         {
-            // Excel
-            var excelReader = new ReadExcelData();
-            var user = excelReader.FindProductByID(Thread.CurrentPrincipal.Identity.Name);
-            if (user != null)
+            if (UserSession.CurrentUser != null)
             {
-                CurrentUserAccount.Username = user.Name;
-                CurrentUserAccount.DisplayName = user.Name;
-                CurrentUserAccount.ProfilePicture = @"C:\Users\duong\Documents\isme.jpg";
+                CurrentUserAccount = UserSession.CurrentUser;
             }
             else
             {
-                CurrentUserAccount.DisplayName = "Invalid user, not logger in";
+                CurrentUserAccount = "Invalid user, not logger in";
             }
         }
-     }
+    }
 }

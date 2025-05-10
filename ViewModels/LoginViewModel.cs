@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Animation;
 using project.Views;
+using System.Configuration;
 
 
 namespace project.ViewModels
@@ -26,13 +27,26 @@ namespace project.ViewModels
     {
         //Fields
         private string _username;
+        private string _po;
         private SecureString _password;
         private string _errorMessage;
         private bool _isViewVisible = true;
         public bool IsAuthenticated { get; set; }
 
         private UserRepository userRepository;
-
+        public string PO 
+        { 
+            get => _po; 
+            set 
+            { 
+                _po = value; 
+                NotifyOfPropertyChange(() => PO);
+                if (!string.IsNullOrWhiteSpace(_po) && _po.Length == 12)
+                {
+                    LoginCommand();
+                }
+            } 
+        }
         public string Username 
         {
             get => _username;
@@ -83,40 +97,43 @@ namespace project.ViewModels
         }
 
         private readonly IWindowManager _windowManager;
-        private readonly MainViewModel _mainViewModel;
+        private ReadExcelData _readExcelData;
 
-        public LoginViewModel(IWindowManager windowManager, MainViewModel mainViewModel)
+        public LoginViewModel(IWindowManager windowManager)
         {
             _windowManager = windowManager;
-            _mainViewModel = mainViewModel;
+            _readExcelData = new ReadExcelData();
             userRepository = new UserRepository();
         }
-        public event System.Action LoginSuccessful;
-        public async Task LoginCommand()
+        
+        public void LoginCommand()
         {
             try
             {
-                string password = SecureStringToString(Password);
-                var isValidUser = userRepository.AuthenticateUser(new NetworkCredential(Username, password));
-                if (isValidUser)
+                if (!string.IsNullOrWhiteSpace(_po) && _po.Length == 12)
                 {
-                    Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity(Username), null);
-                    IsViewVisible = false;
-                    IsAuthenticated = true;
-                    var mainVM = IoC.Get<MainViewModel>();
-                    await _windowManager.ShowWindowAsync(mainVM);
-                    bnClose();
-                    //await TryCloseAsync();
+                    UserModel userModel = _readExcelData.FindProductByID(Username);
+                    if (userModel != null)
+                    {
+                        UserSession.CurrentUser = userModel.Name;
+                        UserSession.CurrentPO = PO;
+                        IsViewVisible = false;
+                        IsAuthenticated = true;
+                        var mainVM = IoC.Get<MainViewModel>();
+                        _windowManager.ShowWindowAsync(mainVM);
+                        bnClose();
+                    }
+                    else
+                    {
+                        ErrorMessage = "* Invalid username or password";
+                    }
                 }
                 else
                 {
-                    ErrorMessage = "* Invalid username or password";
+                    ErrorMessage = "* PO information is incorrect";
                 }
             }
-            finally
-            {
-                Password?.Dispose();
-            }
+            catch { }
         }
         public void bnClose()
         {
@@ -134,30 +151,22 @@ namespace project.ViewModels
             }
         }
 
-        private string SecureStringToString(SecureString secureString)
-        {
-            IntPtr unmanagedString = IntPtr.Zero;
-            try
-            {
-                unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(secureString);
-                return Marshal.PtrToStringUni(unmanagedString);
-            }
-            finally
-            {
-                Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
-            }
-        }
-        public void ExecuteRecoverPasswordCommand()
-        {
+        //private string SecureStringToString(SecureString secureString)
+        //{
+        //    IntPtr unmanagedString = IntPtr.Zero;
+        //    try
+        //    {
+        //        unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(secureString);
+        //        return Marshal.PtrToStringUni(unmanagedString);
+        //    }
+        //    finally
+        //    {
+        //        Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
+        //    }
+        //}
+        //public void ExecuteRecoverPasswordCommand()
+        //{
 
-        }
-    }
-    public class AuthenticationMessage
-    {
-        public bool IsAuthenticated { get; }
-        public AuthenticationMessage(bool isAuthenticated)
-        {
-            IsAuthenticated = isAuthenticated;
-        }
+        //}
     }
 }

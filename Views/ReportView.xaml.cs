@@ -9,7 +9,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -17,19 +16,13 @@ using System.Windows.Shapes;
 namespace project.Views
 {
     /// <summary>
-    /// Interaction logic for HomeView.xaml
+    /// Interaction logic for ReportView.xaml
     /// </summary>
-    public partial class HomeView : UserControl
+    public partial class ReportView : UserControl
     {
-        public HomeView()
+        public ReportView()
         {
             InitializeComponent();
-            Loaded += HomeView_Loaded;
-        }
-        private void HomeView_Loaded(object sender, RoutedEventArgs e)
-        {
-            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
-            fadeIn.Begin(this);
         }
     }
 }

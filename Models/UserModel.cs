@@ -8,13 +8,6 @@ namespace project.Models
 {
     public class UserModel
     {
-        //public string Id { get; set; }
-        //public string Username { get; set; }
-        //public string Password { get; set; }
-        //public string Name { get; set; }
-        //public string LastName { get; set; }
-        //public string Email { get; set; }
-
         public string Machine { get; set; }
         public string ID { get; set; }
         public string Name { get; set; }
@@ -28,5 +21,10 @@ namespace project.Models
         public string Date { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
+    }
+    public static class UserSession
+    {
+        public static string CurrentUser { get; set; }
+        public static string CurrentPO { get; set; }
     }
 }
