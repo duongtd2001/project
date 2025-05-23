@@ -16,7 +16,8 @@ namespace project.Services
         string portName;
         public SerialPortPLC()
         {
-            using (StreamReader reader = new StreamReader("PortPLC.ini"))
+            serialPort = new MelsecFxSerial();
+            using (StreamReader reader = new StreamReader("config.ini"))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
@@ -33,7 +34,6 @@ namespace project.Services
             int dataBits = 7;
             StopBits stopBits = StopBits.One;
             serialPort.SerialPortInni(portName, baudRate, dataBits, stopBits, parity);
-
         }
         public void ConnectPLC()
         {
@@ -60,6 +60,7 @@ namespace project.Services
                 if (serialPort.IsOpen())
                 {
                     serialPort.Close();
+                    serialPort.Dispose();
                 }
             }
             catch { }

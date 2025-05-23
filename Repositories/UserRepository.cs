@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace project.Repositories
 {
@@ -20,22 +21,31 @@ namespace project.Repositories
         //
         public void Add(UserModel userModel)
         {
-            string query = @"INSERT INTO dbo.ASS_LX (Machine, ID, Name, PO, LotNo, Time) 
-                         VALUES (@Machine, @ID, @Name, @PO, @LotNo, @Time)";
-
-            using (SqlConnection conn = GetConnection())
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            try
             {
-                cmd.Parameters.AddWithValue("@Machine", userModel.Machine);
-                cmd.Parameters.AddWithValue("@ID", userModel.ID);
-                cmd.Parameters.AddWithValue("@Name", userModel.Name);
-                cmd.Parameters.AddWithValue("@PO", userModel.ProducName);
-                cmd.Parameters.AddWithValue("@LotNo", userModel.LotNo);
-                cmd.Parameters.AddWithValue("@Time", userModel.Time);
+                string query = @"INSERT INTO dbo.ASS_LX (Machine, ID, Name, ProductName, Time) 
+                         VALUES (@machine, @id, @name, @productname, @time)";
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                using (SqlConnection conn = GetConnection())
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@machine", userModel.Machine);
+                    cmd.Parameters.AddWithValue("@id", userModel.ID);
+                    cmd.Parameters.AddWithValue("@Name", userModel.Name);
+                    //cmd.Parameters.AddWithValue("@name", userModel.PO);
+                    cmd.Parameters.AddWithValue("@productname", userModel.ProducName);
+                    //cmd.Parameters.AddWithValue("@Time_check", userModel.StartTime);
+                    cmd.Parameters.AddWithValue("@time", userModel.Time);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
             }
+            catch
+            {
+                //MessageBox.Show("Server not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            
         }
 
         public bool AuthenticateUser(NetworkCredential credential)
@@ -44,48 +54,58 @@ namespace project.Repositories
             //Excel
             bool validUser = false;
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-
-            using (var stream = File.Open(readExcelData.pathExcel, FileMode.Open, FileAccess.Read))
-            using (var reader = ExcelReaderFactory.CreateReader(stream))
+            try
             {
-                var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
+                using (var stream = File.Open(readExcelData.pathExcel, FileMode.Open, FileAccess.Read))
+                using (var reader = ExcelReaderFactory.CreateReader(stream))
                 {
-                    ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = true }
-                });
-
-                var table = dataSet.Tables[0];
-
-                foreach (DataRow row in table.Rows)
-                {
-                    if (row[1].ToString() == credential.UserName)
+                    var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
                     {
-                        validUser = true;
-                        break;
+                        ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = true }
+                    });
+
+                    var table = dataSet.Tables[0];
+
+                    foreach (DataRow row in table.Rows)
+                    {
+                        if (row[1].ToString() == credential.UserName)
+                        {
+                            validUser = true;
+                            break;
+                        }
                     }
                 }
             }
-
+            catch (Exception)
+            {
+            }
             return validUser;
         }
         
         public void Edit(UserModel userModel)
         {
+            
             string query = @"UPDATE dbo.ASS_LX 
-                         SET Machine = @Machine, Name = @Name, PO = @PO, LotNo = @LotNo, Time = @Time 
+                         SET Machine = @machine, Name = @name, LotNo = @lotno, Time = @time 
                          WHERE ID = @ID";
-
-            using (SqlConnection conn = GetConnection())
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            try
             {
-                cmd.Parameters.AddWithValue("@Machine", userModel.Machine);
-                cmd.Parameters.AddWithValue("@Name", userModel.Name);
-                cmd.Parameters.AddWithValue("@PO", userModel.ProducName);
-                cmd.Parameters.AddWithValue("@LotNo", userModel.LotNo);
-                cmd.Parameters.AddWithValue("@Time", userModel.Time);
-                cmd.Parameters.AddWithValue("@ID", userModel.ID);
+                using (SqlConnection conn = GetConnection())
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@machine", userModel.Machine);
+                    cmd.Parameters.AddWithValue("@name", userModel.Name);
+                    //cmd.Parameters.AddWithValue("@PO", userModel.ProducName);
+                    cmd.Parameters.AddWithValue("@lotno", userModel.LotNo);
+                    cmd.Parameters.AddWithValue("@time", userModel.Time);
+                    cmd.Parameters.AddWithValue("@id", userModel.ID);
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -135,16 +155,44 @@ namespace project.Repositories
         public void Remove(string Id)
         {
             string query = @"DELETE FROM dbo.ASS_LX 
-                         WHERE ID = @ID AND Time = (
-                             SELECT MAX(Time) FROM dbo.ASS_LX WHERE ID = @ID)";
-
-            using (SqlConnection conn = GetConnection())
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+                         WHERE ID = @id AND Time = (
+                             SELECT MAX(Time) FROM dbo.ASS_LX WHERE ID = @id)";
+            try
             {
-                cmd.Parameters.AddWithValue("@ID", Id);
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                using (SqlConnection conn = GetConnection())
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", Id);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
             }
+            catch { }
+            
+        }
+
+        public bool StatusConnectSQL()
+        {
+            bool validConn = false;
+            using (SqlConnection conn = GetConnection())
+            {
+                try
+                {
+                    conn.Open();
+                    if(conn.State == System.Data.ConnectionState.Open)
+                    {
+                        validConn = true;
+                    }
+                    else
+                    {
+                        validConn = false;
+                    }
+                }
+                catch
+                { 
+                }
+            }
+            return validConn;
         }
     }
 }

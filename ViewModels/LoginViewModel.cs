@@ -32,6 +32,7 @@ namespace project.ViewModels
         private string _errorMessage;
         private bool _isViewVisible = true;
         public bool IsAuthenticated { get; set; }
+        private string _FullName;
 
         private UserRepository userRepository;
         public string PO 
@@ -43,9 +44,23 @@ namespace project.ViewModels
                 NotifyOfPropertyChange(() => PO);
                 if (!string.IsNullOrWhiteSpace(_po) && _po.Length == 12)
                 {
+                    UserSession.CurrentPO = PO;
                     LoginCommand();
                 }
+                else
+                {
+                    ErrorMessage = "* PO information is incorrect";
+                }
             } 
+        }
+        public string FullName
+        {
+            get => _FullName;
+            set
+            {
+                _FullName = value;
+                NotifyOfPropertyChange(() => FullName);
+            }
         }
         public string Username 
         {
@@ -54,6 +69,22 @@ namespace project.ViewModels
             {
                 _username = value;
                 NotifyOfPropertyChange(() => Username);
+                UserModel userModel = _readExcelData.FindProductByID(Username);
+                if (userModel != null)
+                {
+                    UserSession.CurrentUser = userModel.Name;
+                    UserSession.CurrentAccess = userModel.Access;
+                    UserSession.CurrentID = userModel.ID;
+                    FullName = userModel.Name;
+                    IsViewVisible = false;
+                    IsAuthenticated = true;
+                    ErrorMessage = "";
+                }
+                else
+                {
+                    FullName = "";
+                    ErrorMessage = "* Invalid username or password";
+                }
             }
         }
         public SecureString Password 
@@ -110,27 +141,26 @@ namespace project.ViewModels
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(_po) && _po.Length == 12)
+                UserModel userModel = _readExcelData.FindProductByID(Username);
+                //int _numberlogin = 0;
+                if (userModel != null)
                 {
-                    UserModel userModel = _readExcelData.FindProductByID(Username);
-                    if (userModel != null)
+                    UserSession.CurrentUser = userModel.Name;
+                    UserSession.CurrentAccess = userModel.Access;
+                    UserSession.NumberOfLoginTimes++;
+                    if(UserSession.NumberOfLoginTimes > 1)
                     {
-                        UserSession.CurrentUser = userModel.Name;
-                        UserSession.CurrentPO = PO;
-                        IsViewVisible = false;
-                        IsAuthenticated = true;
-                        var mainVM = IoC.Get<MainViewModel>();
-                        _windowManager.ShowWindowAsync(mainVM);
-                        bnClose();
-                    }
-                    else
-                    {
-                        ErrorMessage = "* Invalid username or password";
-                    }
+                        UserSession.NumberOfLoginTimes = 2;
+                    }    
+                    IsViewVisible = false;
+                    IsAuthenticated = true;
+                    var mainVM = IoC.Get<MainViewModel>();
+                    _windowManager.ShowWindowAsync(mainVM);
+                    bnClose();
                 }
                 else
                 {
-                    ErrorMessage = "* PO information is incorrect";
+                    ErrorMessage = "* Invalid username or password";
                 }
             }
             catch { }
@@ -150,23 +180,5 @@ namespace project.ViewModels
                 window.MinimizeWithFade();
             }
         }
-
-        //private string SecureStringToString(SecureString secureString)
-        //{
-        //    IntPtr unmanagedString = IntPtr.Zero;
-        //    try
-        //    {
-        //        unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(secureString);
-        //        return Marshal.PtrToStringUni(unmanagedString);
-        //    }
-        //    finally
-        //    {
-        //        Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
-        //    }
-        //}
-        //public void ExecuteRecoverPasswordCommand()
-        //{
-
-        //}
     }
 }

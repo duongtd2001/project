@@ -25,6 +25,13 @@ namespace project.Views
         {
             InitializeComponent();
             Loaded += ManualView_Loaded;
+            this.Loaded += (s, e) =>
+            {
+                mResultTextBox.TextChanged += (sender, args) =>
+                {
+                    mResultTextBox.ScrollToEnd();
+                };
+            };
         }
         private void ManualView_Loaded(object sender, RoutedEventArgs e)
         {

@@ -22,9 +22,5 @@ namespace project.Models
         public string StartTime { get; set; }
         public string EndTime { get; set; }
     }
-    public static class UserSession
-    {
-        public static string CurrentUser { get; set; }
-        public static string CurrentPO { get; set; }
-    }
+    
 }

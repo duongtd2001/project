@@ -10,16 +10,16 @@
     <UserControl.Resources>
         <Storyboard x:Key="FadeInStoryboard">
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
-              From="0" To="1" Duration="0:0:0.25" FillBehavior="HoldEnd"/>
+              From="0" To="1" Duration="0:0:0.35" FillBehavior="HoldEnd"/>
         </Storyboard>
     </UserControl.Resources>
     <Border Grid.Column="1" BorderThickness="1,2,2,2" Background="#200F53" CornerRadius="15">
         <Grid IsEnabled="{Binding SelectedManual}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="35"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition/>
                 <RowDefinition Height="35"/>
-                <RowDefinition Height="35"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Border BorderThickness="0,0,0,2">
                 <Border.BorderBrush>
@@ -33,27 +33,32 @@
                     <Label Content="MANUAL" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
                 </StackPanel>
             </Border>
-            <Border Grid.Row="2" BorderThickness="1">
-                <!--<Border.BorderBrush>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="{StaticResource winBoderColor1}" Offset="0"/>
-                        <GradientStop Color="{StaticResource winBoderColor2}" Offset="0.75"/>
-                        <GradientStop Color="{StaticResource winBoderColor3}" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.BorderBrush>-->
-                <StackPanel Orientation="Horizontal">
-                    <RadioButton Style="{StaticResource menuButton2}"
-                             Tag="{StaticResource color1}"
-                             IsChecked="True"
-                             Command="{Binding ShowResultsLog}">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="RESULTS" Style="{StaticResource menuButtonText}"
-                                   Margin="5"/>
+            <Border Grid.Row="2" BorderThickness="1" Grid.RowSpan="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Style="{StaticResource menuButton2}" Tag="{StaticResource color1}" IsChecked="True" Command="{Binding ShowResultsLog}">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="RESULTS" Style="{StaticResource menuButtonText}"  Margin="5"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <StackPanel VerticalAlignment="Center">
+                            <CheckBox x:Name="mExpand_CKB" IsChecked="{Binding mIsExpand}" VerticalAlignment="Center" Margin="20,0,0,0" Content="EXPAND" Foreground="White" FontWeight="Bold" >
+
+                            </CheckBox>
                         </StackPanel>
-
-                    </RadioButton>
-                </StackPanel>
-
+                    </StackPanel>
+                    <Border Grid.Row="2">
+                        <StackPanel>
+                            <TextBox x:Name="mResultTextBox" Height="{Binding mExpandResult}" Text="{Binding mResults, UpdateSourceTrigger=PropertyChanged}"
+                                    AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                    Style="{StaticResource CustomTextBoxStyle}" FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Border>
             <Border Grid.Row="1">
                 <Grid>
@@ -105,7 +110,7 @@
                     </Border>
                     <Border Grid.Row="1" Grid.Column="0">
                         <UniformGrid Columns="4" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mHome}"
+                            <Button x:Name="mHome"
                                     Background="{Binding IsHome}"
                                     Margin="50,0,0,0"
                                     IsEnabled="{Binding IsEnaHome}" Style="{StaticResource GradientBorderButton}">
@@ -113,18 +118,18 @@
                                     <TextBlock Text="Home" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox Text="{Binding mPosServoSet, Mode=OneWayToSource}" Style="{StaticResource CustomTextBoxStyleGreen}"/>
-                            <TextBox Text="{Binding mPosServo, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False"/>
-                            <Button Command="{Binding mMotion}" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <TextBox Text="{Binding mPosServoSet, Mode=OneWayToSource}" Style="{StaticResource CustomTextBoxStyleGreen}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <TextBox Text="{Binding mPosServo, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotion" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <TextBlock Text="Motion" Style="{StaticResource menuButtonText2}"/>
                             </Button>
                         </UniformGrid>
                     </Border>
                     <Border Grid.Column="2" Grid.Row="1">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <TextBox Text="{Binding mSpeedServo, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False" Margin="50,0,0,0"/>
+                            <TextBox Text="{Binding mSpeedServo, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False" Margin="50,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                             <TextBox Text="{Binding mSpeedServoSet, Mode=OneWayToSource}" Style="{StaticResource CustomTextBoxStyleGreen}"/>
-                            <Button Command="{Binding mSetSpeed}" Background="Transparent"
+                            <Button x:Name="mSetSpeed" Background="Transparent"
                                 Style="{StaticResource GradientBorderButton}" Margin="0,0,50,0">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
@@ -144,14 +149,14 @@
                     </Border>
                     <Border Grid.Column="0" Grid.Row="3">
                         <UniformGrid Columns="3">
-                            <Button Command="{Binding mNegPos}" Background="Transparent"
+                            <Button x:Name="mNegPos" Background="Transparent"
                                     Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="-" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox Grid.ColumnSpan="2" Text="{Binding mPosResVal, Mode=OneWayToSource}" Style="{StaticResource CustomTextBoxStyleGreen}"/>
-                            <Button Command="{Binding mPosPos}"
+                            <TextBox Grid.ColumnSpan="2" Text="{Binding mPosResVal, Mode=OneWayToSource}" Style="{StaticResource CustomTextBoxStyleGreen}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mPosPos"
                                     Margin="0,0,50,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
@@ -163,9 +168,9 @@
 
                     <Border Grid.Column="2" Grid.Row="3" >
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <TextBox Text="{Binding AirTime, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False" Margin="50,0,0,0"/>
-                            <TextBox Text="{Binding mAirTimeValue, Mode=OneWayToSource}" Style="{StaticResource CustomTextBoxStyleGreen}"/>
-                            <Button Command="{Binding mSetAirTime}" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <TextBox Text="{Binding AirTime, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False" Margin="50,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <TextBox Text="{Binding mAirTimeValue, Mode=OneWayToSource}" Style="{StaticResource CustomTextBoxStyleGreen}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mSetAirTime" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
@@ -189,19 +194,19 @@
                     </Border>
                     <Border Grid.Column="0" Grid.Row="15" Grid.ColumnSpan="2">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mCylinder1}" Margin="50,0,50,0"
+                            <Button x:Name="mCylinder1"  Margin="50,0,50,0"
                                     Background="{Binding IsCylinder1}" Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="Cylinder 1" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding mCylinder2}" Margin="50,0,50,0"
+                            <Button x:Name="mCylinder2" Margin="50,0,50,0"
                                     Background="{Binding IsCylinder2}" Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="Cylinder 2" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding mCylinder3}" Margin="50,0,50,0"
+                            <Button x:Name="mCylinder3" Margin="50,0,50,0"
                                     Background="{Binding IsCylinder3}" Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="Cylinder 3" Style="{StaticResource menuButtonText2}"/>
@@ -213,13 +218,13 @@
 
                     <Border Grid.Column="0" Grid.Row="5">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos1}" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <Button x:Name="mSetPos1" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos1, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"  Height="35"/>
-                            <Button Command="{Binding mMotionPos1}" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <TextBox IsEnabled="False" Text="{Binding mPos1, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"  Height="35" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos1" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="Motion" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
@@ -229,13 +234,13 @@
 
                     <Border Grid.Column="2" Grid.Row="5">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos2}" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <Button x:Name="mSetPos2" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos2, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos2}" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <TextBox IsEnabled="False" Text="{Binding mPos2, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos2" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="Motion" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
@@ -254,15 +259,15 @@
                     </Border>
                     <Border Grid.Column="0" Grid.Row="7">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos3}"
+                            <Button x:Name="mSetPos3"
                                     Margin="50,0,0,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos3, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos3}"
+                            <TextBox IsEnabled="False" Text="{Binding mPos3, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos3"
                                     Margin="0,0,50,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
@@ -283,15 +288,15 @@
                     </Border>
                     <Border Grid.Column="0" Grid.Row="9">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Name="testbtn" Command="{Binding mSetPos5}"
+                            <Button x:Name="mSetPos5"
                                     Margin="50,0,0,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos5, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos5}"
+                            <TextBox IsEnabled="False" Text="{Binding mPos5, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos5"
                                     Margin="0,0,50,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
@@ -302,15 +307,15 @@
                     </Border>
                     <Border Grid.Column="2" Grid.Row="7">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos4}"
+                            <Button x:Name="mSetPos4"
                                     Margin="50,0,0,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos4, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos4}"
+                            <TextBox IsEnabled="False" Text="{Binding mPos4, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos4"
                                     Margin="0,0,50,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
@@ -322,13 +327,13 @@
 
                     <Border Grid.Column="2" Grid.Row="9">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos6}" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <Button x:Name="mSetPos6" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos6, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos6}" Margin="0,0,50,0"  Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <TextBox IsEnabled="False" Text="{Binding mPos6, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos6" Margin="0,0,50,0"  Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="Motion" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
@@ -347,15 +352,15 @@
                     </Border>
                     <Border Grid.Column="0" Grid.Row="11">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos7}"
+                            <Button x:Name="mSetPos7" 
                                     Margin="50,0,0,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos7, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos7}" Margin="0,0,50,0" Background="Transparent"
+                            <TextBox IsEnabled="False" Text="{Binding mPos7, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos7" Margin="0,0,50,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="Motion" Style="{StaticResource menuButtonText2}"/>
@@ -375,15 +380,15 @@
                     </Border>
                     <Border Grid.Column="0" Grid.Row="13">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos9}"
+                            <Button x:Name="mSetPos9"
                                     Margin="50,0,0,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos9, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos9}"
+                            <TextBox IsEnabled="False" Text="{Binding mPos9, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos9"
                                     Margin="0,0,50,0" Background="Transparent"
                                     Style="{StaticResource GradientBorderButton}">
                                 <StackPanel>
@@ -395,13 +400,13 @@
 
                     <Border Grid.Column="2" Grid.Row="11">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos8}" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <Button x:Name="mSetPos8" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos8, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos8}" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <TextBox IsEnabled="False" Text="{Binding mPos8, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos8" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="Motion" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
@@ -411,13 +416,13 @@
 
                     <Border Grid.Column="2" Grid.Row="13">
                         <UniformGrid Columns="3" HorizontalAlignment="Stretch">
-                            <Button Command="{Binding mSetPos10}" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <Button x:Name="mSetPos10" Margin="50,0,0,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="SET" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
                             </Button>
-                            <TextBox IsEnabled="False" Text="{Binding mPos10, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}"/>
-                            <Button Command="{Binding mMotionPos10}" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
+                            <TextBox IsEnabled="False" Text="{Binding mPos10, Mode=OneWay}" Style="{StaticResource CustomTextBoxStyle}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="mMotionPos10" Margin="0,0,50,0" Style="{StaticResource GradientBorderButton}" Background="Transparent">
                                 <StackPanel>
                                     <TextBlock Text="Motion" Style="{StaticResource menuButtonText2}"/>
                                 </StackPanel>
@@ -426,18 +431,6 @@
                     </Border>
                 </Grid>
             </Border>
-
-
-            <Border Grid.Row="3">
-                <StackPanel>
-                    <TextBox Height="35" Text="{Binding mResults}"
-                         AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                         Style="{StaticResource CustomTextBoxStyle}"
-                         IsReadOnly="True"/>
-                </StackPanel>
-            </Border>
         </Grid>
-
-
     </Border>
 </UserControl>

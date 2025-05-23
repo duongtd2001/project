@@ -7,10 +7,19 @@ using Caliburn.Micro;
 using project.Views;
 using project.ViewModels;
 using System.Windows.Media;
+using System.Threading;
+using System.Windows;
+using project.Services;
+using project.Models;
+using project.Repositories;
+using project.Messages;
+using project.Helpers;
+using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace project.ViewModels
 {
-    public class AutoViewModel : Screen
+    public class AutoViewModel : Screen, IHandle<PlcDataMessage>, IHandle<SqlDataMessage>
     {
         private Brush _aIsBall1;
         public Brush aIsBall1 { get => _aIsBall1; set { _aIsBall1 = value; NotifyOfPropertyChange(() => aIsBall1); } }
@@ -45,94 +54,573 @@ namespace project.ViewModels
         private Brush _aISAirSP;
         public Brush aISAirSP { get => _aISAirSP; set { _aISAirSP = value; NotifyOfPropertyChange(() => aISAirSP); } }
 
+        private bool _EnaBall1;
+        public bool EnaBall1 { get => _EnaBall1; set { _EnaBall1 = value;NotifyOfPropertyChange(() => EnaBall1); } }
+
+        private bool _EnaBall2;
+        public bool EnaBall2 { get => _EnaBall2; set { _EnaBall2 = value; NotifyOfPropertyChange(() => EnaBall2); } }
+
+        private bool _EnaBall3;
+        public bool EnaBall3 { get => _EnaBall3; set { _EnaBall3 = value; NotifyOfPropertyChange(() => EnaBall3); } }
+
+        private bool _EnaBall4;
+        public bool EnaBall4 { get => _EnaBall4; set { _EnaBall4 = value; NotifyOfPropertyChange(() => EnaBall4); } }
+
+        private bool _EnaBall5;
+        public bool EnaBall5 { get => _EnaBall5; set { _EnaBall5 = value; NotifyOfPropertyChange(() => EnaBall5); } }
+
+        private bool _EnaBall6;
+        public bool EnaBall6 { get => _EnaBall6; set { _EnaBall6 = value; NotifyOfPropertyChange(() => EnaBall6); } }
+
+        private bool _EnaBall7;
+        public bool EnaBall7 { get => _EnaBall7; set { _EnaBall7 = value; NotifyOfPropertyChange(() => EnaBall7); } }
+
+        private bool _EnaBall8;
+        public bool EnaBall8 { get => _EnaBall8; set { _EnaBall8 = value; NotifyOfPropertyChange(() => EnaBall8); } }
+
+        private bool _EnaBall9;
+        public bool EnaBall9 { get => _EnaBall9; set { _EnaBall9 = value; NotifyOfPropertyChange(() => EnaBall9); } }
+
+        private bool _EnaBall10;
+        public bool EnaBall10 { get => _EnaBall10; set { _EnaBall10 = value; NotifyOfPropertyChange(() => EnaBall10); } }
+
+
         private string _aResults;
         public string aResults { get => _aResults; set { _aResults = value; NotifyOfPropertyChange(() => aResults); } }
 
-        private string SelectedAddress;
+        private bool _aINSERTBALL_Enabled;
+        public bool aINSERTBALL_Enabled { get => _aINSERTBALL_Enabled; set { _aINSERTBALL_Enabled = value; NotifyOfPropertyChange(() => aINSERTBALL_Enabled); } }
 
-        public AutoViewModel() 
-        { 
+        private string _aPosServo;
+        public string aPosServo { get => _aPosServo; set { _aPosServo = value; NotifyOfPropertyChange(() => aPosServo); } }
 
+        private string _aSpeedServo;
+        public string aSpeedServo { get => _aSpeedServo; set { _aSpeedServo = value; NotifyOfPropertyChange(() => aSpeedServo); } }
+
+        private int _ExpandResult = 50;
+        public int ExpandResult { get => _ExpandResult; set { _ExpandResult = value; NotifyOfPropertyChange(() => ExpandResult); } }
+
+        private bool _IsExpand;
+        public bool IsExpand { get => _IsExpand; set { _IsExpand = value; NotifyOfPropertyChange(() => IsExpand); } }
+
+        private bool _LockInsertBall = true;
+        public bool LockInsertBall { get => _LockInsertBall; set { _LockInsertBall = value; NotifyOfPropertyChange(() => LockInsertBall); } }
+
+        private Brush _aIsINSERTBALL;
+        public Brush aIsINSERTBALL { get => _aIsINSERTBALL; set { _aIsINSERTBALL = value; NotifyOfPropertyChange(() => aIsINSERTBALL); } }
+
+        //private Visibility _Access_Info = Visibility.Collapsed;
+        //public Visibility Access_Info { get => _Access_Info; set { _Access_Info = value; NotifyOfPropertyChange(() => Access_Info); } }
+
+        private FlowDocument _logDocument = new FlowDocument();
+
+        public FlowDocument LogDocument
+        {
+            get => _logDocument;
+            set
+            {
+                _logDocument = value;
+                NotifyOfPropertyChange(() => LogDocument);
+            }
         }
+
+        private string SelectedAddress;
+        private SerialPortPLC plcCom;
+        private Thread plcRT;
+        private Thread UILog;
+        //private bool mMainThreadFlag = false;
+        private readonly IEventAggregator _eventAggregator;
+        private PulseConverter _convert;
+        private UserRepository userRepository;
+
+        public AutoViewModel(ref SerialPortPLC _plcCom, IEventAggregator eventAggregator, ref PulseConverter pulseConverter)
+        {
+            plcCom = _plcCom;
+            _convert = pulseConverter;
+            _eventAggregator = eventAggregator;
+            _eventAggregator.SubscribeOnPublishedThread(this);
+            userRepository = new UserRepository();
+            plcRT = new Thread(() => { RestoreButtonStates(); });
+            plcRT.IsBackground = true;
+            plcRT.Start();
+        }
+        public Task HandleAsync(PlcDataMessage message, CancellationToken cancellationToken)
+        {
+            switch (message.IsConnectPLC)
+            {
+                case 0:
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC DISCONNECTED.\n";
+                    break;
+                case 1:
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC CONNECTED.\n";
+                    break;
+                case 2:
+                    aPosServo = message.IsPosition;
+                    aSpeedServo = message.IsSpeed;
+                    break;
+               
+            } 
+            return Task.CompletedTask;
+        }
+        public Task HandleAsync(SqlDataMessage message, CancellationToken cancellationToken)
+        {
+            switch (message.SQLConnect)
+            {
+                case 0:
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SQL SERVER DISCONNECTED.\n";
+                    break;
+                case 1:
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SQL CONNECTED.\n";
+                    break;
+            }
+            return Task.CompletedTask;
+        }
+        public void Expand_CKB()
+        {
+            ExpandResult = IsExpand ? 200 : 50;
+        }
+        
+        private void RestoreButtonStates()
+        {
+            while (plcCom.CheckConnectPLC())
+            {
+                for (int i = 2; i <= 11; i++)
+                {
+                    var proop = this.GetType().GetProperty($"aIsBall{i - 1}");
+                    var proop2 = this.GetType().GetProperty($"EnaBall{i - 1}");
+                    if (plcCom.ReadDataFromPLC($"M{i}2"))
+                    {
+                        proop.SetValue(this, Brushes.LightGreen);
+                        proop2.SetValue(this, false);
+                    }
+                    else
+                    {
+                        proop.SetValue(this, Brushes.Transparent);
+                        proop2.SetValue(this, true);
+                    }
+                }
+            }
+        }
+        private void UIManipulation()
+        {
+            bool UILogBool = true;
+            UILog = new Thread(() =>
+            {
+                while (UILogBool)
+                {
+                    for (int i = 2; i <= 11; i++)
+                    {
+                        var proop = this.GetType().GetProperty($"aIsBall{i - 1}");
+                        var proop2 = this.GetType().GetProperty($"EnaBall{i - 1}");
+                        if (plcCom.ReadDataFromPLC($"M{i}4"))
+                        {
+                            aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     MOTION POSITION {i - 1} DONE.\n";
+                            UILogBool = false;
+                            break;
+                        }
+                    }
+                }
+            });
+            UILog.IsBackground = true;
+            UILog.Start();
+        }
+
         public void SelectPos1_Auto()
         {
-            ResetButtonColors(); 
-            aIsBall1 = Brushes.LightGreen; 
-            NotifyOfPropertyChange(() => aIsBall1); 
-            SelectedAddress = "M20";
+            if (plcCom.CheckConnectPLC())
+            {
+                ResetButtonColors();
+                aIsBall1 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall1);
+                SelectedAddress = "M20";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 1.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos2_Auto()
         {
-            ResetButtonColors(); 
-            aIsBall2 = Brushes.LightGreen; 
-            NotifyOfPropertyChange(() => aIsBall2); 
-            SelectedAddress = "M30";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall2 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall2);
+                SelectedAddress = "M30";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 2.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos3_Auto()
         {
-            ResetButtonColors();
-            aIsBall3 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall3);
-            SelectedAddress = "M40";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall3 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall3);
+                SelectedAddress = "M40";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 3.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos4_Auto()
         {
-            ResetButtonColors();
-            aIsBall4 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall4);
-            SelectedAddress = "M50";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall4 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall4);
+                SelectedAddress = "M50";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 4.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos5_Auto()
         {
-            ResetButtonColors();
-            aIsBall5 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall5);
-            SelectedAddress = "M60";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall5 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall5);
+                SelectedAddress = "M60";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 5.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos6_Auto()
         {
-            ResetButtonColors();
-            aIsBall6 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall6);
-            SelectedAddress = "M70";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall6 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall6);
+                SelectedAddress = "M70";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 6.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos7_Auto()
         {
-            ResetButtonColors();
-            aIsBall7 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall7);
-            SelectedAddress = "M80";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall7 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall7);
+                SelectedAddress = "M80";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 7.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos8_Auto()
         {
-            ResetButtonColors();
-            aIsBall8 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall8);
-            SelectedAddress = "M90";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall8 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall8);
+                SelectedAddress = "M90";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 8.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos9_Auto()
         {
-            ResetButtonColors();
-            aIsBall9 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall9);
-            SelectedAddress = "M100";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall9 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall9);
+                SelectedAddress = "M100";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 9.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         public void SelectPos10_Auto()
         {
-            ResetButtonColors();
-            aIsBall10 = Brushes.LightGreen;
-            NotifyOfPropertyChange(() => aIsBall10);
-            SelectedAddress = "M110";
+            if ((plcCom.CheckConnectPLC()))
+            {
+                ResetButtonColors();
+                aIsBall10 = Brushes.LightGreen;
+                NotifyOfPropertyChange(() => aIsBall10);
+                SelectedAddress = "M110";
+                Thread t = new Thread(() =>
+                {
+                    if (!string.IsNullOrEmpty(SelectedAddress))
+                    {
+                        plcCom.WriteDataToPLC(SelectedAddress, true);
+                        plcCom.WriteDataToPLC(SelectedAddress, false);
+                        aINSERTBALL_Enabled = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 10.\n";
+                        UIManipulation();
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+        private bool _ISAirSP = false;
         public void AirSPCommand()
         {
-
+            if (plcCom.CheckConnectPLC())
+            {
+                Thread t = new Thread(() =>
+                {
+                    if (!_ISAirSP)
+                    {
+                        plcCom.WriteDataToPLC("M376", true);
+                        aISAirSP = Brushes.LightGreen;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     BLOW AIR.\n";
+                    }
+                    else
+                    {
+                        plcCom.WriteDataToPLC("M376", false);
+                        aISAirSP = Brushes.Transparent;
+                        _aInsertBoolDone = true;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     STOP BLOWING AIR.\n";
+                        _Question();
+                    }
+                    _ISAirSP = !_ISAirSP;
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+        private bool _InsertBall = false;
+        string _endtime = "";
+        string _starttime = "";
         public void INSERTBALL_Auto()
         {
-
+            if (plcCom.CheckConnectPLC())
+            {
+                _starttime = DateTime.Now.ToString();
+                Thread t = new Thread(() =>
+                {
+                    if (!_InsertBall)
+                    {
+                        plcCom.WriteDataToPLC("M362", true);
+                        aIsINSERTBALL = Brushes.LightGreen;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     INSERT BALL.\n";
+                    }
+                    aINSERTBALL_Enabled = false;
+                });
+                t.IsBackground = true;
+                t.Start();
+                _aInsertBool = true;
+                _aInsertDone = new Thread(() =>
+                {
+                    aCheckInsertDone();
+                });
+                _aInsertDone.IsBackground = true;
+                //_aInsertDone.SetApartmentState(ApartmentState.STA);
+                _aInsertDone.Start();
+            }
+            else
+            {
+                MessageBox.Show("PLC not connected!!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-
+        Thread _aInsertDone;
+        private bool _aInsertBool = false;
+        private bool _aInsertBoolDone = false;
+        static ManualResetEvent saveDataSQLEvent = new ManualResetEvent(false);
+        private void aCheckInsertDone()
+        {
+            while (_aInsertBool)
+            {
+                if (plcCom.ReadDataFromPLC("M366"))
+                {
+                    aINSERTBALL_Enabled = true;
+                    _aInsertBool = false;
+                    _aInsertBoolDone = true;
+                    _endtime = DateTime.Now.ToString("T");
+                    _Question();
+                    break;
+                }
+            }
+        }
+        private void _Question()
+        {
+            if(_aInsertBoolDone)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     IS THE BALL ALL IN?\n";
+                    if (MessageBox.Show("IS THE BALL ALL IN?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        _aInsertBoolDone = false;
+                        LockInsertBall = true;
+                        Thread saveDataSQL = new Thread(() =>
+                        {
+                            UserModel _userModel = new UserModel
+                            {
+                                Machine = "LX15",
+                                ID = UserSession.CurrentID,
+                                Name = UserSession.CurrentUser,
+                                ProducName = "Product Test",
+                                Time = DateTime.Now.ToString(),
+                            };
+                            userRepository.Add(_userModel);
+                        });
+                        saveDataSQL.IsBackground = true;
+                        saveDataSQL.Start();
+                        aIsINSERTBALL = Brushes.Transparent;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     YES!\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     INSERT BALL DONE.\n";
+                        MessageBox.Show("PO complete!", "Infomation", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _eventAggregator.PublishOnUIThreadAsync(new AutoDoneEvent(1));
+                    }
+                    else
+                    {
+                        LockInsertBall = false;
+                        _aInsertBoolDone = false;
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     NO!\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     RETURN!\n";
+                        return;
+                    }
+                });
+            }    
+        }
         private void ResetButtonColors()
         {
             aIsBall1 = Brushes.Transparent;

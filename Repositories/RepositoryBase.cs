@@ -12,11 +12,12 @@ namespace project.Repositories
         private readonly string connectionString;
         public RepositoryBase()
         {
+            //User ID = ost_pe; Password = ost_pe@spclt
             connectionString = "Data Source=192.168.100.100;Initial Catalog=OST; Persist Security Info=True;User ID=ost_pe;Password=ost_pe@spclt";
         }
         protected SqlConnection GetConnection()
         {
             return new SqlConnection(connectionString);
-        }
+        } 
     }
 }

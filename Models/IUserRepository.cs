@@ -16,6 +16,7 @@ namespace project.Models
         UserModel GetById(int Id);
         UserModel GetByUsername(string username);
         IEnumerable<UserModel> GetByAll();
+        bool StatusConnectSQL();
         //...
     }
 }

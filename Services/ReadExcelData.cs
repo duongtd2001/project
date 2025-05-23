@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using ExcelDataReader;
 using System.Diagnostics;
+using System.Windows;
+using Caliburn.Micro;
+using project.ViewModels;
 
 namespace project.Services
 {
@@ -15,10 +18,12 @@ namespace project.Services
     {
         public string basePath;
         public string pathExcel;
+        //private string EmployeesData = @"\\192.168.100.100\05_OST_Program\EMPLOYEES_OST";
         public ReadExcelData()
         {
             basePath = AppContext.BaseDirectory;
             pathExcel = Path.Combine(basePath, "Employees2.xls");
+            //pathExcel = Path.Combine(EmployeesData, "Employees.xls");
         }
         public UserModel FindProductByID(string idToFind)
         {
@@ -47,7 +52,7 @@ namespace project.Services
                         };
                     }
                 }
-                
+
             }
             return null;
         }

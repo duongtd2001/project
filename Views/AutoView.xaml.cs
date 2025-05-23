@@ -1,4 +1,6 @@
-﻿using System;
+﻿using project.Helpers;
+using project.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +27,13 @@ namespace project.Views
         {
             InitializeComponent();
             Loaded += AutoView_Loaded;
+            this.Loaded += (s, e) =>
+            {
+                ResultTextBox.TextChanged += (sender, args) =>
+                {
+                    ResultTextBox.ScrollToEnd();
+                };
+            };
         }
         private void AutoView_Loaded(object sender, RoutedEventArgs e)
         {

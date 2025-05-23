@@ -3,6 +3,8 @@ using project.ViewModels;
 using System.Windows;
 using System;
 using System.Linq;
+using System.ComponentModel;
+using System.Xml.Linq;
 
 namespace project.Services
 {
@@ -20,7 +22,7 @@ namespace project.Services
                 .Singleton<IWindowManager, WindowManager>()
                 .Singleton<IEventAggregator, EventAggregator>();
             // Đăng ký ViewModels
-             GetType().Assembly.GetTypes()
+            GetType().Assembly.GetTypes()
                  .Where(type => type.IsClass)
                  .Where(type => type.Name.EndsWith("ViewModel"))
                  .ToList()

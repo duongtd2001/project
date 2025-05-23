@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewModel="clr-namespace:project.ViewModels" 
         xmlns:customcontrols="clr-namespace:project.CustomControls"
+        xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+        xmlns:cal="http://www.caliburnproject.org"
         Title="LoginView" Height="550" Width="800"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -142,7 +144,7 @@
                 <StackPanel Width="220"
                             Grid.Row="1"
                             Orientation="Vertical"
-                            Margin="0,35,0,0">
+                            Margin="0,15,0,0">
 
                     <Image Source="/Images/LogoMisumi.png"
                            Width="200" Height="100"/>
@@ -164,8 +166,8 @@
                                Margin="0,5,0,0"/>
 
 
-                    <TextBlock Text="Username"
-                               Foreground="DarkGray"
+                    <TextBlock Text="ID"
+                               Foreground="Yellow"
                                FontSize="12"
                                FontWeight="Medium"
                                FontFamily="Montserrat"                             
@@ -173,27 +175,27 @@
 
                     <TextBox x:Name="txtUser"
                              Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                             cal:Message.Attach=""
                              FontSize="13"
                              FontWeight="Medium"
                              FontFamily="Montserrat"                            
-                             Foreground="White"
+                             Foreground="Yellow"
                              CaretBrush="LightGray"
-                             BorderBrush="DarkGray"
+                             BorderBrush="Yellow"
                              BorderThickness="0,0,0,2"
                              Height="28"
                              VerticalContentAlignment="Center"
                              Margin="0,5,0,0"
                              Padding="20,0,0,0">
-
                         <TextBox.Background>
-                            <ImageBrush ImageSource="/Images/user-icon.png"
+                            <ImageBrush 
                                         Stretch="None"
                                         AlignmentX="Left"/>
                         </TextBox.Background>
                     </TextBox>
 
-                    <TextBlock Text="PO"
-                               Foreground="DarkGray"
+                    <TextBlock Text="Name"
+                               Foreground="Aqua"
                                FontSize="12"
                                FontWeight="Medium"
                                FontFamily="Montserrat"                             
@@ -205,22 +207,44 @@
                                                           Margin="0,5,0,0">
                     </customcontrols:ucBindablePasswordBox>-->
 
-                    <TextBox x:Name="txtPO"
-                            Text="{Binding PO, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="txtName"
+                            Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                             FontSize="13"
                             FontWeight="Medium"
                             FontFamily="Montserrat"                            
-                            Foreground="White"
+                            Foreground="Aqua"
                             CaretBrush="LightGray"
-                            BorderBrush="DarkGray"
+                            BorderBrush="Aqua"
                             BorderThickness="0,0,0,2"
                             Height="28"
                             VerticalContentAlignment="Center"
                             Margin="0,5,0,0"
-                            Padding="20,0,0,0">
+                            Padding="20,0,0,0"
+                             IsReadOnly="True">
 
                         <TextBox.Background>
-                            <ImageBrush ImageSource="/Images/user-icon.png"
+                            <ImageBrush 
+                                        Stretch="None"
+                                        AlignmentX="Left"/>
+                        </TextBox.Background>
+                    </TextBox>
+                    <TextBlock Text="PO" Foreground="DeepPink" FontSize="12" FontWeight="Medium" FontFamily="Montserrat" Margin="0,15,0,0"/>
+                    <TextBox x:Name="txtPO"
+                             Text="{Binding PO, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="13"
+                                FontWeight="Medium"
+                                FontFamily="Montserrat"                            
+                                Foreground="DeepPink"
+                                CaretBrush="LightGray"
+                                BorderBrush="DeepPink"
+                                BorderThickness="0,0,0,2"
+                                Height="28"
+                                VerticalContentAlignment="Center"
+                                Margin="0,5,0,0"
+                                Padding="20,0,0,0">
+
+                        <TextBox.Background>
+                            <ImageBrush 
                                         Stretch="None"
                                         AlignmentX="Left"/>
                         </TextBox.Background>

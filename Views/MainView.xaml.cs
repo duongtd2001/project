@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
+using project.ViewModels;
 
 namespace project.Views
 {
@@ -29,6 +30,8 @@ namespace project.Views
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);
             this.StateChanged += Window_StateChanged;
+            this.WindowState = WindowState.Maximized;
+            //this.DataContextChanged += ViewAutoView_DataContextChanged;
         }
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
@@ -67,21 +70,56 @@ namespace project.Views
         }
         private void bnMaximine_Click(object sender, RoutedEventArgs e)
         {
-            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
-            fadeIn.Begin(this);
-            if (this.WindowState == WindowState.Normal)
-            {
-                this.WindowState = WindowState.Maximized;
-            }
-            else
-            {
-                this.WindowState = WindowState.Normal;
-            }
+            //Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
+            //fadeIn.Begin(this);
+            //if (this.WindowState == WindowState.Normal)
+            //{
+            //    this.WindowState = WindowState.Maximized;
+            //}
+            //else
+            //{
+            //    this.WindowState = WindowState.Normal;
+            //}
         }
         private void Window_StateChanged(object sender, EventArgs e)
         {
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);
         }
+        //private void ViewAutoView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        //{
+        //    if (e.NewValue is MainViewModel vm)
+        //    {
+        //        vm.PropertyChanged += (s, args) =>
+        //        {
+        //            if (args.PropertyName == nameof(vm.IsUnlocked))
+        //            {
+        //                Dispatcher.Invoke(() =>
+        //                {
+        //                    if (vm.IsUnlocked)
+        //                    {
+        //                        OverlayGrid.Visibility = Visibility.Collapsed;
+        //                        OverlayGrid.BeginAnimation(UIElement.OpacityProperty, null); // Dừng animation
+        //                    }
+        //                    else
+        //                    {
+        //                        OverlayGrid.Visibility = Visibility.Visible;
+
+        //                        var animation = new DoubleAnimation
+        //                        {
+        //                            From = 0.2,
+        //                            To = 0.8,
+        //                            Duration = TimeSpan.FromSeconds(1.2),
+        //                            AutoReverse = true,
+        //                            RepeatBehavior = RepeatBehavior.Forever
+        //                        };
+
+        //                        BlinkingText.BeginAnimation(UIElement.OpacityProperty, animation);
+        //                    }
+        //                });
+        //            }
+        //        };
+        //    }
+        //}
     }
 }
