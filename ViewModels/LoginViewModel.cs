@@ -19,6 +19,7 @@ using System.Windows;
 using System.Windows.Media.Animation;
 using project.Views;
 using System.Configuration;
+using System.IO;
 
 
 namespace project.ViewModels
@@ -69,21 +70,31 @@ namespace project.ViewModels
             {
                 _username = value;
                 NotifyOfPropertyChange(() => Username);
-                UserModel userModel = _readExcelData.FindProductByID(Username);
-                if (userModel != null)
+                try
                 {
-                    UserSession.CurrentUser = userModel.Name;
-                    UserSession.CurrentAccess = userModel.Access;
-                    UserSession.CurrentID = userModel.ID;
-                    FullName = userModel.Name;
-                    IsViewVisible = false;
-                    IsAuthenticated = true;
-                    ErrorMessage = "";
+                    UserModel userModel = _readExcelData.FindProductByID(Username);
+                    if (userModel != null)
+                    {
+                        UserSession.CurrentUser = userModel.Name;
+                        UserSession.CurrentAccess = userModel.Access;
+                        UserSession.CurrentID = userModel.ID;
+                        FullName = userModel.Name;
+                        IsViewVisible = false;
+                        IsAuthenticated = true;
+                        ErrorMessage = "";
+                        IsIDFocused = false;
+                        IsPOFocused = true;
+
+                    }
+                    else
+                    {
+                        FullName = "";
+                        ErrorMessage = "* Invalid username or password";
+                    }
                 }
-                else
+                catch (Exception)
                 {
-                    FullName = "";
-                    ErrorMessage = "* Invalid username or password";
+                    ErrorMessage = "* Employee data file not found";
                 }
             }
         }
@@ -127,16 +138,25 @@ namespace project.ViewModels
             return _view;
         }
 
+        private bool _IsIDFocused = true;
+        public bool IsIDFocused { get => _IsIDFocused; set {  _IsIDFocused = value; NotifyOfPropertyChange(() => IsIDFocused); } }
+
+        private bool _IsPOFocused;
+        public bool IsPOFocused { get => _IsPOFocused; set { _IsPOFocused = value; NotifyOfPropertyChange(() => IsPOFocused); } }
+
         private readonly IWindowManager _windowManager;
         private ReadExcelData _readExcelData;
+        private string basePathConfig;
 
         public LoginViewModel(IWindowManager windowManager)
         {
+            LoadDataConfig();
+
             _windowManager = windowManager;
             _readExcelData = new ReadExcelData();
             userRepository = new UserRepository();
         }
-        
+
         public void LoginCommand()
         {
             try
@@ -156,7 +176,10 @@ namespace project.ViewModels
                     IsAuthenticated = true;
                     var mainVM = IoC.Get<MainViewModel>();
                     _windowManager.ShowWindowAsync(mainVM);
-                    bnClose();
+                    if (_view is LoginView window)
+                    {
+                        window.CloseWithFade();
+                    }
                 }
                 else
                 {
@@ -165,12 +188,18 @@ namespace project.ViewModels
             }
             catch { }
         }
+
         public void bnClose()
         {
-            if (_view is LoginView window)
+            if (MessageBox.Show("Are you sure you want to exit?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.OK)
             {
-                window.CloseWithFade();
+                if (_view is LoginView window)
+                {
+                    window.ShutdownWithFade();
+                }
             }
+            else
+                return;
         }
 
         public void bnMinimize()
@@ -179,6 +208,45 @@ namespace project.ViewModels
             {
                 window.MinimizeWithFade();
             }
+        }
+
+        private void LoadDataConfig()
+        {
+            // Path File
+            basePathConfig = Path.Combine(AppContext.BaseDirectory, "config.ini");
+
+            // Data PLC Siemen
+            List<string> listPLC = IniFile.ReadSectionRawValue(basePathConfig, "PLCSiemen");
+            DataConfigModel.CPUTypes = listPLC[0];
+            DataConfigModel.IP_PLC = listPLC[1];
+            DataConfigModel._Rack = listPLC[2];
+            DataConfigModel._Slot = listPLC[3];
+
+            // Data PLC FX Serial
+            List<string> listPLCFx = IniFile.ReadSectionRawValue(basePathConfig, "PLCFXSerial");
+            DataConfigModel._Port = listPLCFx[0];
+            DataConfigModel._BaudRate = listPLCFx[1];
+            DataConfigModel._Parity = listPLCFx[2];
+            DataConfigModel._DataBits = listPLCFx[3];
+            DataConfigModel._StopBits = listPLCFx[4];
+
+            // Data Employees
+            List<string> listEmp = IniFile.ReadSectionRawValue(basePathConfig, "Employees");
+            DataConfigModel.PathEmployees = listEmp[0];
+            DataConfigModel.FileNameEmp = listEmp[1];
+
+            // Data SQL Server
+            List<string> listSQL = IniFile.ReadSectionRaw(basePathConfig, "SQLServer");
+            DataConfigModel.DataSource = listSQL[0];
+            DataConfigModel.InitialCatalog = listSQL[1];
+            DataConfigModel.PersistSecurityInfo = listSQL[2];
+            DataConfigModel.UserID = listSQL[3];
+            DataConfigModel.Password = listSQL[4];
+
+            // Data Save Excel
+            List<string> listSaveData = IniFile.ReadSectionRawValue(basePathConfig, "SaveDataExcel");
+            DataConfigModel.PathSaveData = listSaveData[0];
+            DataConfigModel.FileSaveData = listSaveData[1];
         }
     }
 }

@@ -90,11 +90,14 @@ namespace project.ViewModels
         private bool _mIsExpand;
         public bool mIsExpand { get => _mIsExpand; set { _mIsExpand = value; NotifyOfPropertyChange(() => mIsExpand); } }
 
+        
+
         private SerialPortPLC plcCom;
         private bool _ISmInsertBall = false;
         private bool _IsSTRCylinder1 = false;
         private bool _IsSTRCylinder2 = false;
         private bool _IsSTRCylinder3 = false;
+        private bool _mAutoBall = false;
 
         private PulseConverter _convert;
         private readonly IEventAggregator _eventAggregator;
@@ -131,15 +134,20 @@ namespace project.ViewModels
             mExpandResult = mIsExpand ? 200 : 50;
         }
 
+        public void mAuto_CKB()
+        {
+            _mAutoBall = !_mAutoBall;
+        }
+
         public Task HandleAsync(PlcDataMessage message, CancellationToken cancellationToken)
         {
             switch (message.IsConnectPLC)
             {
                 case 0:
-                    mResults += DateTime.Now.ToString("yyyy MM dd - HH mm ss") + "     PLC not connected!!!\n";
+                    mResults += DateTime.Now.ToString("yyyy MM dd - HH mm ss") + "     PLC NOT CONNECTED\n";
                     break;
                 case 1:
-                    mResults += DateTime.Now.ToString("yyyy MM dd - HH mm ss") + "     PLC connected!!!\n";
+                    mResults += DateTime.Now.ToString("yyyy MM dd - HH mm ss") + "     PLC CONNECTED\n";
                     break;
                 case 2:
                     mPosServo = message.IsPosition;
@@ -685,22 +693,44 @@ namespace project.ViewModels
         {
             if (plcCom.CheckConnectPLC())
             {
-                Thread t = new Thread(() =>
+                if (!_mAutoBall)
                 {
-                    if (!_IsSTRCylinder1)
+                    Thread t = new Thread(() =>
                     {
-                        plcCom.WriteDataToPLC("M356", true);
-                        IsCylinder1 = Brushes.LightGreen;
-                    }
-                    else
+                        if (!_IsSTRCylinder1)
+                        {
+                            plcCom.WriteDataToPLC("M356", true);
+                            IsCylinder1 = Brushes.LightGreen;
+                        }
+                        else
+                        {
+                            plcCom.WriteDataToPLC("M356", false);
+                            IsCylinder1 = Brushes.Transparent;
+                        }
+                        _IsSTRCylinder1 = !_IsSTRCylinder1;
+                    });
+                    t.IsBackground = true;
+                    t.Start();
+                }
+                else
+                {
+                    Thread t = new Thread(() =>
                     {
-                        plcCom.WriteDataToPLC("M356", false);
-                        IsCylinder1 = Brushes.Transparent;
-                    }
-                    _IsSTRCylinder1 = !_IsSTRCylinder1;
-                });
-                t.IsBackground = true;
-                t.Start();
+                        if (!_IsSTRCylinder1)
+                        {
+                            plcCom.WriteDataToPLC("M364", true);
+                            IsCylinder1 = Brushes.LightGreen;
+                        }
+                        else
+                        {
+                            plcCom.WriteDataToPLC("M364", false);
+                            IsCylinder1 = Brushes.Transparent;
+                        }
+                        _IsSTRCylinder1 = !_IsSTRCylinder1;
+                    });
+                    t.IsBackground = true;
+                    t.Start();
+                }
             }
             else
             {

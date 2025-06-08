@@ -4,7 +4,7 @@
         xmlns:viewModel="clr-namespace:project.ViewModels" 
         xmlns:customcontrols="clr-namespace:project.CustomControls"
         xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
-        xmlns:cal="http://www.caliburnproject.org"
+        xmlns:helpers="clr-namespace:project.Helpers"
         Title="LoginView" Height="550" Width="800"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -175,7 +175,7 @@
 
                     <TextBox x:Name="txtUser"
                              Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                             cal:Message.Attach=""
+                             helpers:AutoFocusHelper.IsFocused="{Binding IsIDFocused}"
                              FontSize="13"
                              FontWeight="Medium"
                              FontFamily="Montserrat"                            
@@ -231,6 +231,7 @@
                     <TextBlock Text="PO" Foreground="DeepPink" FontSize="12" FontWeight="Medium" FontFamily="Montserrat" Margin="0,15,0,0"/>
                     <TextBox x:Name="txtPO"
                              Text="{Binding PO, UpdateSourceTrigger=PropertyChanged}"
+                             helpers:AutoFocusHelper.IsFocused="{Binding IsPOFocused}"
                              FontSize="13"
                                 FontWeight="Medium"
                                 FontFamily="Montserrat"                            

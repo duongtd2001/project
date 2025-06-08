@@ -12,7 +12,7 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         Background="Transparent"
-        AllowsTransparency="False">
+        AllowsTransparency="True">
     <Window.Resources>
         <Storyboard x:Key="FadeInStoryboard">
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
@@ -166,8 +166,7 @@
                         </Button>
                         <Button x:Name="bnMaximine"
                                 Style="{StaticResource controlButton}"
-                                Tag="{StaticResource color6}"
-                                Click="bnMaximine_Click">
+                                Tag="{StaticResource color6}">
                             <fa:IconImage Icon="Square" Style="{StaticResource controlButtonIcon}"/>
                         </Button>
                         <Button Click="bnMinimize_Click"
@@ -190,11 +189,11 @@
                             <fa:IconImage Icon="{Binding Icon}"
                                           Height="20"
                                           Width="20"
-                                          Foreground="Red"
+                                          Foreground="LightGreen"
                                           Margin="35,0,10,0"/>
 
                             <TextBlock Text="{Binding Caption}"
-                                       Foreground="Red"
+                                       Foreground="LightGreen"
                                        FontSize="16"
                                        FontFamily="Montserrat"
                                        FontWeight="Medium"

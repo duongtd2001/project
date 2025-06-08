@@ -18,12 +18,11 @@ namespace project.Services
     {
         public string basePath;
         public string pathExcel;
-        //private string EmployeesData = @"\\192.168.100.100\05_OST_Program\EMPLOYEES_OST";
+        private string EmployeesData = @"\\192.168.100.100\05_OST_Program\EMPLOYEES_OST";
         public ReadExcelData()
         {
-            basePath = AppContext.BaseDirectory;
-            pathExcel = Path.Combine(basePath, "Employees2.xls");
-            //pathExcel = Path.Combine(EmployeesData, "Employees.xls");
+            basePath = DataConfigModel.PathEmployees;
+            pathExcel = Path.Combine(basePath, DataConfigModel.FileNameEmp);
         }
         public UserModel FindProductByID(string idToFind)
         {
@@ -52,7 +51,6 @@ namespace project.Services
                         };
                     }
                 }
-
             }
             return null;
         }

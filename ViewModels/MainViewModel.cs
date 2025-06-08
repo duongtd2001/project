@@ -18,6 +18,7 @@ using System.Xml.Linq;
 using System.Drawing;
 using System.Data.SqlClient;
 using project.Helpers;
+using System.IO;
 
 namespace project.ViewModels
 {
@@ -55,20 +56,20 @@ namespace project.ViewModels
         }
 
         private AutoViewModel autoViewModel;
-        //private CustomerViewModel customerViewModel;
-        //private HomeViewModel homeViewModel;
         private ManualViewModel manualViewModel;
-        //private ReportViewModel reportViewModel;
-        //private SettingViewModel settingViewModel;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWindowManager _windowManager;
         private SerialPortPLC plcCom;
         private Thread _plcThread;
+        private Thread _plcThreadEstop;
         private Thread _sqlThread;
+        private Thread _AutoConnectThread;
+        private Thread _ManConnectThread;
         private bool _isRunning = false;
         public bool _isStatusPLC = false;
-        //private ReadExcelData _readExcelData;
         private PulseConverter _convert;
+
+        int checkEMC = 0;
 
         public MainViewModel(IEventAggregator eventAggregator, IWindowManager windowManager)
         {
@@ -78,8 +79,12 @@ namespace project.ViewModels
             {
                 if (plcCom.CheckConnectPLC())
                 {
-                    plcCom.WriteDataToPLC("M330", true);
-                    plcCom.WriteDataToPLC("M0", true);
+                    if (plcCom.ReadDataFromPLC("M374"))
+                    {
+                        checkEMC = 1;
+                        plcCom.WriteDataToPLC("M330", true);
+                        plcCom.WriteDataToPLC("M0", true);
+                    }
                 }
             }
             _convert = new PulseConverter(5000, 5);
@@ -87,53 +92,39 @@ namespace project.ViewModels
             _eventAggregator = eventAggregator;
             _eventAggregator.SubscribeOnUIThread(this);
             autoViewModel = new AutoViewModel(ref plcCom, _eventAggregator, ref _convert);
-            //customerViewModel = new CustomerViewModel();
-            //homeViewModel = new HomeViewModel();
             manualViewModel = new ManualViewModel(ref plcCom, _eventAggregator, ref _convert);
-            //reportViewModel = new ReportViewModel();
-            //settingViewModel = new SettingViewModel();
-            //_readExcelData = new ReadExcelData();
             userRepository = new UserRepository();
             ShowAutoCommand();
-            LoadCurrentUserData();
+            LoadCurrentUserData(); 
             StartPlcThread();
+            PLCCheckESTOP();
             SQLConn();
-            _windowManager = windowManager;
+           
         }
 
-        //public void ShowHomeViewCommand()
-        //{
-        //    ActivateItemAsync(homeViewModel);
-        //    Caption = "Dashboard";
-        //    Icon = IconChar.Home;
-        //}
-        //public void ShowCustomerViewCommand()
-        //{
-        //    ActivateItemAsync(customerViewModel);
-        //    Caption = "Customer";
-        //    Icon = IconChar.UserGroup;
-        //}
-        //public void ShowReportCommand()
-        //{
-        //    ActivateItemAsync(reportViewModel);
-        //    Caption = "Report";
-        //    Icon = IconChar.PieChart;
-        //}
-        //public void ShowSettingCommand()
-        //{
-        //    ActivateItemAsync(settingViewModel);
-        //    Caption = "Setting";
-        //    Icon = IconChar.Tools;
-        //}
         public void ShowAutoCommand()
         {
             ActivateItemAsync(autoViewModel);
             Caption = "Auto";
             Icon = IconChar.Play;
-            if(plcCom.CheckConnectPLC())
+            if (plcCom.CheckConnectPLC())
             {
                 plcCom.WriteDataToPLC("M492", true);
                 plcCom.WriteDataToPLC("M492", false);
+            }
+            else
+            {
+                _AutoConnectThread = new Thread(() =>
+                {
+                    while (plcCom.CheckConnectPLC())
+                    {
+                        plcCom.WriteDataToPLC("M492", true);
+                        plcCom.WriteDataToPLC("M492", false);
+                        break;
+                    }
+                });
+                _AutoConnectThread.IsBackground = true;
+                _AutoConnectThread.Start();
             }
         }
         public void ShowManualCommand()
@@ -146,21 +137,36 @@ namespace project.ViewModels
                 plcCom.WriteDataToPLC("M482", true);
                 plcCom.WriteDataToPLC("M482", false);
             }
+            else
+            {
+                _ManConnectThread = new Thread(() =>
+                {
+                    while (plcCom.CheckConnectPLC())
+                    {
+                        plcCom.WriteDataToPLC("M482", true);
+                        plcCom.WriteDataToPLC("M482", false);
+                        _ManConnectThread.Abort();
+                        break;
+                    }
+                });
+                _ManConnectThread.IsBackground = true;
+                _ManConnectThread.Start();
+            }
         }
         public void bnClose()
         {
             if (MessageBox.Show("Are you sure you want to exit?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.OK)
             {
-                if (_view is MainView window)
+                if (_view is MainView windowv)
                 {
-                    window.CloseWithFade();
                     plcCom.DisconnectPLC();
+                    windowv.ShutdownWithFade();
                 }
             }
             else
                 return;
-
         }
+
         private string _access = "";
         private void LoadCurrentUserData()
         {
@@ -171,12 +177,13 @@ namespace project.ViewModels
                 IsManualCommand = Visibility.Visible;
             }
         }
+
         private void StartPlcThread()
         {
             _plcThread = new Thread(() =>
             {
                 bool previousStatus = false;
-
+                
                 while (!_isRunning)
                 {
                     bool currentStatus = plcCom.CheckConnectPLC();
@@ -218,6 +225,65 @@ namespace project.ViewModels
             });
             _plcThread.IsBackground = true;
             _plcThread.Start();
+        }
+
+        private void PLCCheckESTOP()
+        {
+            _plcThreadEstop = new Thread(() =>
+            {
+                int eStopStatus = 0;
+                while(!_isRunning)
+                {
+                    bool eStop = plcCom.ReadDataFromPLC("M374");
+
+                    if(plcCom.CheckConnectPLC())
+                    {
+                        if (!eStop)
+                        {
+                            checkEMC = 1;
+                            _eventAggregator.PublishOnUIThreadAsync(new E_Stop { E_StopPLC = 0 });
+                            eStopStatus = 1;
+                            Thread.Sleep(1000);
+                        }
+                        else
+                        {
+                            if (eStopStatus == 1)
+                            {
+                                if (checkEMC == 1)
+                                {
+                                    _eventAggregator.PublishOnUIThreadAsync(new E_Stop { E_StopPLC = 1 });
+                                    eStopStatus = 2;
+                                }
+                                if (eStopStatus == 2)
+                                {
+                                    plcCom.WriteDataToPLC("M330", true);
+                                    plcCom.WriteDataToPLC("M0", true);
+                                    plcCom.WriteDataToPLC("M492", true);
+                                    plcCom.WriteDataToPLC("M492", false);
+                                    checkEMC = 1;
+                                    eStopStatus = 3;
+                                }
+                            }
+                            else
+                            {
+                                if(plcCom.ReadDataFromPLC("M15"))
+                                {
+                                    _eventAggregator.PublishOnUIThreadAsync(new E_Stop { E_StopPLC = 2 });
+                                    plcCom.WriteDataToPLC("M15", false);
+                                    Thread.Sleep(1000);
+                                }
+                                else
+                                {
+                                    _eventAggregator.PublishOnUIThreadAsync(new E_Stop { E_StopPLC = 3 });
+                                    Thread.Sleep(1000);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            _plcThreadEstop.IsBackground = true;
+            _plcThreadEstop.Start();
         }
 
         private void SQLConn()

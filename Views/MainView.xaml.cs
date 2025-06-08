@@ -30,7 +30,12 @@ namespace project.Views
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);
             this.StateChanged += Window_StateChanged;
-            this.WindowState = WindowState.Maximized;
+            //WD_State();
+            //this.WindowState = WindowState.Maximized;
+            this.Left = SystemParameters.WorkArea.Left;
+            this.Top = SystemParameters.WorkArea.Top;
+            this.Width = SystemParameters.WorkArea.Width;
+            this.Height = SystemParameters.WorkArea.Height;
             //this.DataContextChanged += ViewAutoView_DataContextChanged;
         }
         [DllImport("user32.dll")]
@@ -54,6 +59,15 @@ namespace project.Views
             };
             fadeOut.Begin(this);
         }
+        public void ShutdownWithFade()
+        {
+            Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
+            fadeOut.Completed += (s, e) =>
+            {
+                Application.Current.Shutdown();
+            };
+            fadeOut.Begin(this);
+        }
         public void MinimizeWithFade()
         {
             Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
@@ -68,58 +82,27 @@ namespace project.Views
         {
             MinimizeWithFade();
         }
-        private void bnMaximine_Click(object sender, RoutedEventArgs e)
+        //private void bnMaximine_Click(object sender, RoutedEventArgs e)
+        //{
+        //    WD_State();
+        //}
+        public void WD_State()
         {
-            //Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
-            //fadeIn.Begin(this);
-            //if (this.WindowState == WindowState.Normal)
-            //{
-            //    this.WindowState = WindowState.Maximized;
-            //}
-            //else
-            //{
-            //    this.WindowState = WindowState.Normal;
-            //}
+            Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
+            fadeIn.Begin(this);
+            if (this.WindowState == WindowState.Normal)
+            {
+                this.WindowState = WindowState.Maximized;
+            }
+            else
+            {
+                this.WindowState = WindowState.Normal;
+            }
         }
         private void Window_StateChanged(object sender, EventArgs e)
         {
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];
             fadeIn.Begin(this);
         }
-        //private void ViewAutoView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        //{
-        //    if (e.NewValue is MainViewModel vm)
-        //    {
-        //        vm.PropertyChanged += (s, args) =>
-        //        {
-        //            if (args.PropertyName == nameof(vm.IsUnlocked))
-        //            {
-        //                Dispatcher.Invoke(() =>
-        //                {
-        //                    if (vm.IsUnlocked)
-        //                    {
-        //                        OverlayGrid.Visibility = Visibility.Collapsed;
-        //                        OverlayGrid.BeginAnimation(UIElement.OpacityProperty, null); // Dừng animation
-        //                    }
-        //                    else
-        //                    {
-        //                        OverlayGrid.Visibility = Visibility.Visible;
-
-        //                        var animation = new DoubleAnimation
-        //                        {
-        //                            From = 0.2,
-        //                            To = 0.8,
-        //                            Duration = TimeSpan.FromSeconds(1.2),
-        //                            AutoReverse = true,
-        //                            RepeatBehavior = RepeatBehavior.Forever
-        //                        };
-
-        //                        BlinkingText.BeginAnimation(UIElement.OpacityProperty, animation);
-        //                    }
-        //                });
-        //            }
-        //        };
-        //    }
-        //}
     }
 }

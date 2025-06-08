@@ -13,6 +13,7 @@ namespace project.Models
         public static string CurrentAccess { get; set; }
         public static string CurrentPO { get; set; }
         public static int NumberOfLoginTimes { get; set; }
-        public static int SavePos { get; set; } = 0;
+        public static string SavePos { get; set; }
+        public static int CurrentPos { get; set; }
     }
 }

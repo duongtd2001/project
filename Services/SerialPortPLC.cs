@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using project.Models;
 
 namespace project.Services
 {
@@ -17,23 +18,9 @@ namespace project.Services
         public SerialPortPLC()
         {
             serialPort = new MelsecFxSerial();
-            using (StreamReader reader = new StreamReader("config.ini"))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (line.StartsWith("Port="))
-                    {
-                        portName = line.Substring("Port=".Length);
-                    }
-                }
-            }
-            serialPort = new MelsecFxSerial();
-            int baudRate = 38400; // Tốc độ truyền
-            Parity parity = Parity.Even;
-            int dataBits = 7;
-            StopBits stopBits = StopBits.One;
-            serialPort.SerialPortInni(portName, baudRate, dataBits, stopBits, parity);
+            Parity parity = (Parity)Enum.Parse(typeof(Parity), DataConfigModel._Parity);
+            StopBits stopBits = (StopBits)Enum.Parse(typeof(StopBits), DataConfigModel._StopBits);
+            serialPort.SerialPortInni(DataConfigModel._Port, Convert.ToInt32(DataConfigModel._BaudRate), Convert.ToInt32(DataConfigModel._DataBits), stopBits, parity);
         }
         public void ConnectPLC()
         {
