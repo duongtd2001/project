@@ -148,7 +148,7 @@
                 <ControlTemplate TargetType="RadioButton">
                     <Border Background="{TemplateBinding Background}"
                         BorderThickness="4,0,0,0"
-                        BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="2">
+                        BorderBrush="{TemplateBinding BorderBrush}">
                         <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>
@@ -234,7 +234,7 @@
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="{StaticResource winBoderColor1}" Offset="0"/>
-                    <GradientStop Color="{StaticResource winBoderColor2}" Offset="0.75"/>
+                    <GradientStop Color="{StaticResource winBoderColor2}" Offset="0.5"/>
                     <GradientStop Color="{StaticResource winBoderColor3}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
@@ -245,8 +245,7 @@
                     <Border x:Name="Border"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="3">
+                        Background="{TemplateBinding Background}">
                         <ScrollViewer Margin="0"
                                   x:Name="PART_ContentHost"/>
                     </Border>

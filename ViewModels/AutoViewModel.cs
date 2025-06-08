@@ -16,11 +16,14 @@ using project.Messages;
 using project.Helpers;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
+using System.Diagnostics.Contracts;
 
 namespace project.ViewModels
 {
-    public class AutoViewModel : Screen, IHandle<PlcDataMessage>, IHandle<SqlDataMessage>
+    public class AutoViewModel : Screen, IHandle<PlcDataMessage>, IHandle<SqlDataMessage>, IHandle<E_Stop>
     {
+        #region MyRegion
         private Brush _aIsBall1;
         public Brush aIsBall1 { get => _aIsBall1; set { _aIsBall1 = value; NotifyOfPropertyChange(() => aIsBall1); } }
 
@@ -55,7 +58,7 @@ namespace project.ViewModels
         public Brush aISAirSP { get => _aISAirSP; set { _aISAirSP = value; NotifyOfPropertyChange(() => aISAirSP); } }
 
         private bool _EnaBall1;
-        public bool EnaBall1 { get => _EnaBall1; set { _EnaBall1 = value;NotifyOfPropertyChange(() => EnaBall1); } }
+        public bool EnaBall1 { get => _EnaBall1; set { _EnaBall1 = value; NotifyOfPropertyChange(() => EnaBall1); } }
 
         private bool _EnaBall2;
         public bool EnaBall2 { get => _EnaBall2; set { _EnaBall2 = value; NotifyOfPropertyChange(() => EnaBall2); } }
@@ -108,9 +111,7 @@ namespace project.ViewModels
 
         private Brush _aIsINSERTBALL;
         public Brush aIsINSERTBALL { get => _aIsINSERTBALL; set { _aIsINSERTBALL = value; NotifyOfPropertyChange(() => aIsINSERTBALL); } }
-
-        //private Visibility _Access_Info = Visibility.Collapsed;
-        //public Visibility Access_Info { get => _Access_Info; set { _Access_Info = value; NotifyOfPropertyChange(() => Access_Info); } }
+        #endregion
 
         private FlowDocument _logDocument = new FlowDocument();
 
@@ -128,38 +129,56 @@ namespace project.ViewModels
         private SerialPortPLC plcCom;
         private Thread plcRT;
         private Thread UILog;
-        //private bool mMainThreadFlag = false;
         private readonly IEventAggregator _eventAggregator;
         private PulseConverter _convert;
         private UserRepository userRepository;
+        private SaveDataTestExcel _saveDataExcel;
 
         public AutoViewModel(ref SerialPortPLC _plcCom, IEventAggregator eventAggregator, ref PulseConverter pulseConverter)
         {
+            
             plcCom = _plcCom;
             _convert = pulseConverter;
             _eventAggregator = eventAggregator;
             _eventAggregator.SubscribeOnPublishedThread(this);
             userRepository = new UserRepository();
-            plcRT = new Thread(() => { RestoreButtonStates(); });
-            plcRT.IsBackground = true;
-            plcRT.Start();
+            if (UserSession.NumberOfLoginTimes == 1)
+            {
+                for (int i = 1; i <= 10; i++)
+                {
+                    var proop2 = this.GetType().GetProperty($"EnaBall{i}");
+                    proop2.SetValue(this, false);
+                }
+            }
+            else
+            {
+                plcRT = new Thread(() => { RestoreButtonStates(); });
+                plcRT.IsBackground = true;
+                plcRT.Start();
+            }
+            
+            _saveDataExcel = new SaveDataTestExcel();
         }
         public Task HandleAsync(PlcDataMessage message, CancellationToken cancellationToken)
         {
             switch (message.IsConnectPLC)
             {
                 case 0:
-                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC DISCONNECTED.\n";
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        var proop2 = this.GetType().GetProperty($"EnaBall{i}");
+                        proop2.SetValue(this, false);
+                    }
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC DISCONNECTED\n";
                     break;
                 case 1:
-                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC CONNECTED.\n";
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC CONNECTED\n";
                     break;
                 case 2:
                     aPosServo = message.IsPosition;
                     aSpeedServo = message.IsSpeed;
                     break;
-               
-            } 
+            }
             return Task.CompletedTask;
         }
         public Task HandleAsync(SqlDataMessage message, CancellationToken cancellationToken)
@@ -167,10 +186,36 @@ namespace project.ViewModels
             switch (message.SQLConnect)
             {
                 case 0:
-                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SQL SERVER DISCONNECTED.\n";
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SQL SERVER DISCONNECTED\n";
                     break;
                 case 1:
-                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SQL CONNECTED.\n";
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SQL SERVER CONNECTED\n";
+                    break;
+            }
+            return Task.CompletedTask;
+        }
+        public Task HandleAsync(E_Stop message, CancellationToken cancellationToken)
+        {
+            switch (message.E_StopPLC)
+            {
+                case 0:
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        var proop2 = this.GetType().GetProperty($"EnaBall{i}");
+                        proop2.SetValue(this, false);
+                    }
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC E-STOP\n";
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        var proop2 = this.GetType().GetProperty($"EnaBall{i}");
+                        proop2.SetValue(this, true);
+                    }
+                    aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     MACHINE READY\n";
                     break;
             }
             return Task.CompletedTask;
@@ -179,26 +224,23 @@ namespace project.ViewModels
         {
             ExpandResult = IsExpand ? 200 : 50;
         }
-        
+
         private void RestoreButtonStates()
         {
-            while (plcCom.CheckConnectPLC())
+            for (int i = 1; i <= 10; i++)
             {
-                for (int i = 2; i <= 11; i++)
+                var proop = this.GetType().GetProperty($"aIsBall{i}");
+                var proop2 = this.GetType().GetProperty($"EnaBall{i}");
+                if(i == UserSession.CurrentPos)
                 {
-                    var proop = this.GetType().GetProperty($"aIsBall{i - 1}");
-                    var proop2 = this.GetType().GetProperty($"EnaBall{i - 1}");
-                    if (plcCom.ReadDataFromPLC($"M{i}2"))
-                    {
-                        proop.SetValue(this, Brushes.LightGreen);
-                        proop2.SetValue(this, false);
-                    }
-                    else
-                    {
-                        proop.SetValue(this, Brushes.Transparent);
-                        proop2.SetValue(this, true);
-                    }
+                    proop2.SetValue(this, false);
                 }
+                else
+                {
+                    proop.SetValue(this, Brushes.Transparent);
+                    proop2.SetValue(this, true);
+                }
+                
             }
         }
         private void UIManipulation()
@@ -210,11 +252,19 @@ namespace project.ViewModels
                 {
                     for (int i = 2; i <= 11; i++)
                     {
-                        var proop = this.GetType().GetProperty($"aIsBall{i - 1}");
-                        var proop2 = this.GetType().GetProperty($"EnaBall{i - 1}");
                         if (plcCom.ReadDataFromPLC($"M{i}4"))
                         {
-                            aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     MOTION POSITION {i - 1} DONE.\n";
+                            for (int j = 2; j <= 11 ; j++)
+                            {
+                                var proop = this.GetType().GetProperty($"aIsBall{j - 1}");
+                                var proop2 = this.GetType().GetProperty($"EnaBall{j - 1}");
+                                if (j != i)
+                                {
+                                    proop.SetValue(this, Brushes.Transparent);
+                                    proop2.SetValue(this, true);
+                                }
+                            }
+                            aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     MOTION POSITION {i - 1} DONE\n";
                             UILogBool = false;
                             break;
                         }
@@ -230,9 +280,12 @@ namespace project.ViewModels
             if (plcCom.CheckConnectPLC())
             {
                 ResetButtonColors();
-                aIsBall1 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall1 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall1);
                 SelectedAddress = "M20";
+                UserSession.SavePos = "-2";
+                UserSession.CurrentPos = 1;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -240,7 +293,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 1.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 1\n";
                         UIManipulation();
                     }
                 });
@@ -257,9 +310,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall2 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall2 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall2);
                 SelectedAddress = "M30";
+                UserSession.SavePos = "-1.5";
+                UserSession.CurrentPos = 2;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -267,7 +323,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 2.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 2\n";
                         UIManipulation();
                     }
                 });
@@ -284,9 +340,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall3 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall3 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall3);
                 SelectedAddress = "M40";
+                UserSession.SavePos = "-1";
+                UserSession.CurrentPos = 3;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -294,7 +353,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 3.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 3\n";
                         UIManipulation();
                     }
                 });
@@ -311,9 +370,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall4 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall4 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall4);
                 SelectedAddress = "M50";
+                UserSession.SavePos = "-0.5";
+                UserSession.CurrentPos = 4;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -321,7 +383,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 4.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 4\n";
                         UIManipulation();
                     }
                 });
@@ -338,9 +400,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall5 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall5 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall5);
                 SelectedAddress = "M60";
+                UserSession.SavePos = "0";
+                UserSession.CurrentPos = 5;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -348,7 +413,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 5.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 5\n";
                         UIManipulation();
                     }
                 });
@@ -365,9 +430,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall6 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall6 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall6);
                 SelectedAddress = "M70";
+                UserSession.SavePos = "+0.5";
+                UserSession.CurrentPos = 6;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -375,7 +443,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 6.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 6\n";
                         UIManipulation();
                     }
                 });
@@ -392,9 +460,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall7 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall7 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall7);
                 SelectedAddress = "M80";
+                UserSession.SavePos = "+1";
+                UserSession.CurrentPos = 7;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -402,7 +473,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 7.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 7\n";
                         UIManipulation();
                     }
                 });
@@ -419,9 +490,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall8 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall8 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall8);
                 SelectedAddress = "M90";
+                UserSession.SavePos = "+1.5";
+                UserSession.CurrentPos = 8;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -429,7 +503,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 8.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 8\n";
                         UIManipulation();
                     }
                 });
@@ -446,9 +520,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall9 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall9 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall9);
                 SelectedAddress = "M100";
+                UserSession.SavePos = "+2";
+                UserSession.CurrentPos = 9;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -456,7 +533,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 9.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 9\n";
                         UIManipulation();
                     }
                 });
@@ -473,9 +550,12 @@ namespace project.ViewModels
             if ((plcCom.CheckConnectPLC()))
             {
                 ResetButtonColors();
-                aIsBall10 = Brushes.LightGreen;
+                ResetEna();
+                //aIsBall10 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall10);
                 SelectedAddress = "M110";
+                UserSession.SavePos = "+2.5";
+                UserSession.CurrentPos = 10;
                 Thread t = new Thread(() =>
                 {
                     if (!string.IsNullOrEmpty(SelectedAddress))
@@ -483,7 +563,7 @@ namespace project.ViewModels
                         plcCom.WriteDataToPLC(SelectedAddress, true);
                         plcCom.WriteDataToPLC(SelectedAddress, false);
                         aINSERTBALL_Enabled = false;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 10.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     SELECT MOVE POSITION 10\n";
                         UIManipulation();
                     }
                 });
@@ -506,15 +586,24 @@ namespace project.ViewModels
                     {
                         plcCom.WriteDataToPLC("M376", true);
                         aISAirSP = Brushes.LightGreen;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     BLOW AIR.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     BLOW AIR\n";
                     }
                     else
                     {
-                        plcCom.WriteDataToPLC("M376", false);
-                        aISAirSP = Brushes.Transparent;
-                        _aInsertBoolDone = true;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     STOP BLOWING AIR.\n";
-                        _Question();
+                        if(!checkInsert)
+                        {
+                            plcCom.WriteDataToPLC("M376", false);
+                            aISAirSP = Brushes.Transparent;
+                            aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     STOP BLOWING AIR\n";
+                        }
+                        else
+                        {
+                            plcCom.WriteDataToPLC("M376", false);
+                            aISAirSP = Brushes.Transparent;
+                            aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     STOP BLOWING AIR\n";
+                            _aInsertBoolDone = true;
+                            _Question();
+                        }
                     }
                     _ISAirSP = !_ISAirSP;
                 });
@@ -527,33 +616,42 @@ namespace project.ViewModels
             }
         }
         private bool _InsertBall = false;
+        private bool checkInsert = false;
         string _endtime = "";
         string _starttime = "";
         public void INSERTBALL_Auto()
         {
             if (plcCom.CheckConnectPLC())
             {
-                _starttime = DateTime.Now.ToString();
-                Thread t = new Thread(() =>
+                if (UserSession.CurrentPos != 0)
                 {
-                    if (!_InsertBall)
+                    _starttime = DateTime.Now.ToString("HH:mm:ss");
+                    Thread t = new Thread(() =>
                     {
-                        plcCom.WriteDataToPLC("M362", true);
-                        aIsINSERTBALL = Brushes.LightGreen;
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     INSERT BALL.\n";
-                    }
-                    aINSERTBALL_Enabled = false;
-                });
-                t.IsBackground = true;
-                t.Start();
-                _aInsertBool = true;
-                _aInsertDone = new Thread(() =>
+                        if (!_InsertBall)
+                        {
+                            plcCom.WriteDataToPLC("M362", true);
+                            checkInsert = true;
+                            aIsINSERTBALL = Brushes.LightGreen;
+                            aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     INSERT BALL\n";
+                        }
+                        aINSERTBALL_Enabled = false;
+                    });
+                    t.IsBackground = true;
+                    t.Start();
+                    _aInsertBool = true;
+                    _aInsertDone = new Thread(() =>
+                    {
+                        aCheckInsertDone();
+                    });
+                    _aInsertDone.IsBackground = true;
+                    //_aInsertDone.SetApartmentState(ApartmentState.STA);
+                    _aInsertDone.Start();
+                }
+                else
                 {
-                    aCheckInsertDone();
-                });
-                _aInsertDone.IsBackground = true;
-                //_aInsertDone.SetApartmentState(ApartmentState.STA);
-                _aInsertDone.Start();
+                    MessageBox.Show("Please select ball type!!!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
             else
             {
@@ -573,7 +671,7 @@ namespace project.ViewModels
                     aINSERTBALL_Enabled = true;
                     _aInsertBool = false;
                     _aInsertBoolDone = true;
-                    _endtime = DateTime.Now.ToString("T");
+                    //_endtime = DateTime.Now.ToString("T");
                     _Question();
                     break;
                 }
@@ -588,25 +686,30 @@ namespace project.ViewModels
                     aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     IS THE BALL ALL IN?\n";
                     if (MessageBox.Show("IS THE BALL ALL IN?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
+                        _endtime = DateTime.Now.ToString("HH:mm:ss");
                         _aInsertBoolDone = false;
                         LockInsertBall = true;
                         Thread saveDataSQL = new Thread(() =>
                         {
-                            UserModel _userModel = new UserModel
+                            /*UserModel _userModel = new UserModel
                             {
                                 Machine = "LX15",
                                 ID = UserSession.CurrentID,
                                 Name = UserSession.CurrentUser,
-                                ProducName = "Product Test",
-                                Time = DateTime.Now.ToString(),
+
+                                //ProducName = "Product Test",
+                                Date = DateTime.Now.ToString(),
                             };
-                            userRepository.Add(_userModel);
+                            userRepository.Add(_userModel);*/
+
+                            _saveDataExcel.SaveData("LX15", UserSession.CurrentUser, UserSession.CurrentID, UserSession.CurrentAccess,
+                                UserSession.CurrentPO, UserSession.SavePos, DateTime.Now.ToString("MM-dd-yyyy"), _starttime, _endtime);
                         });
                         saveDataSQL.IsBackground = true;
                         saveDataSQL.Start();
                         aIsINSERTBALL = Brushes.Transparent;
                         aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     YES!\n";
-                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     INSERT BALL DONE.\n";
+                        aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     INSERT BALL DONE\n";
                         MessageBox.Show("PO complete!", "Infomation", MessageBoxButton.OK, MessageBoxImage.Information);
                         _eventAggregator.PublishOnUIThreadAsync(new AutoDoneEvent(1));
                     }
@@ -621,6 +724,22 @@ namespace project.ViewModels
                 });
             }    
         }
+
+        private void ResetEna()
+        {
+            if (plcCom.CheckConnectPLC())
+            {
+                for (int i = 2; i <= 11; i++)
+                {
+                    var proop = this.GetType().GetProperty($"aIsBall{i - 1}");
+                    var proop2 = this.GetType().GetProperty($"EnaBall{i - 1}");
+                   
+                    proop.SetValue(this, Brushes.Transparent);
+                    proop2.SetValue(this, false);
+                }
+            }
+        }
+
         private void ResetButtonColors()
         {
             aIsBall1 = Brushes.Transparent;

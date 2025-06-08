@@ -52,6 +52,16 @@ namespace project.Views
             };
             fadeOut.Begin(this);
         }
+        public void ShutdownWithFade()
+        {
+            Storyboard fadeOut = (Storyboard)this.Resources["FadeOutStoryboard"];
+            fadeOut.Completed += (s, e) =>
+            {
+                Application.Current.Shutdown();
+            };
+            fadeOut.Begin(this);
+
+        }
         private void Window_StateChanged(object sender, EventArgs e)
         {
             Storyboard fadeIn = (Storyboard)this.Resources["FadeInStoryboard"];

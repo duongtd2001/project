@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+using project.Models;
 
 namespace project.Repositories
 {
@@ -13,7 +14,8 @@ namespace project.Repositories
         public RepositoryBase()
         {
             //User ID = ost_pe; Password = ost_pe@spclt
-            connectionString = "Data Source=192.168.100.100;Initial Catalog=OST; Persist Security Info=True;User ID=ost_pe;Password=ost_pe@spclt";
+            connectionString = $"{DataConfigModel.DataSource};{DataConfigModel.InitialCatalog};{DataConfigModel.PersistSecurityInfo};" +
+                $"{DataConfigModel.UserID};{DataConfigModel.Password};";
         }
         protected SqlConnection GetConnection()
         {
