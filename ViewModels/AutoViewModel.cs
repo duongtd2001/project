@@ -100,7 +100,7 @@ namespace project.ViewModels
         private string _aSpeedServo;
         public string aSpeedServo { get => _aSpeedServo; set { _aSpeedServo = value; NotifyOfPropertyChange(() => aSpeedServo); } }
 
-        private int _ExpandResult = 50;
+        private int _ExpandResult = 100;
         public int ExpandResult { get => _ExpandResult; set { _ExpandResult = value; NotifyOfPropertyChange(() => ExpandResult); } }
 
         private bool _IsExpand;
@@ -136,7 +136,7 @@ namespace project.ViewModels
 
         public AutoViewModel(ref SerialPortPLC _plcCom, IEventAggregator eventAggregator, ref PulseConverter pulseConverter)
         {
-            
+
             plcCom = _plcCom;
             _convert = pulseConverter;
             _eventAggregator = eventAggregator;
@@ -156,7 +156,7 @@ namespace project.ViewModels
                 plcRT.IsBackground = true;
                 plcRT.Start();
             }
-            
+
             _saveDataExcel = new SaveDataTestExcel();
         }
         public Task HandleAsync(PlcDataMessage message, CancellationToken cancellationToken)
@@ -170,6 +170,7 @@ namespace project.ViewModels
                         proop2.SetValue(this, false);
                     }
                     aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC DISCONNECTED\n";
+
                     break;
                 case 1:
                     aResults += $"[{DateTime.Now.ToString("yyyy MM dd - HH mm ss")}]     PLC CONNECTED\n";
@@ -209,7 +210,7 @@ namespace project.ViewModels
                 case 1:
                     break;
                 case 2:
-                    
+
                     for (int i = 1; i <= 10; i++)
                     {
                         var proop2 = this.GetType().GetProperty($"EnaBall{i}");
@@ -222,7 +223,7 @@ namespace project.ViewModels
         }
         public void Expand_CKB()
         {
-            ExpandResult = IsExpand ? 200 : 50;
+            ExpandResult = IsExpand ? 200 : 100;
         }
 
         private void RestoreButtonStates()
@@ -231,7 +232,7 @@ namespace project.ViewModels
             {
                 var proop = this.GetType().GetProperty($"aIsBall{i}");
                 var proop2 = this.GetType().GetProperty($"EnaBall{i}");
-                if(i == UserSession.CurrentPos)
+                if (i == UserSession.CurrentPos)
                 {
                     proop2.SetValue(this, false);
                 }
@@ -240,7 +241,7 @@ namespace project.ViewModels
                     proop.SetValue(this, Brushes.Transparent);
                     proop2.SetValue(this, true);
                 }
-                
+
             }
         }
         private void UIManipulation()
@@ -254,7 +255,7 @@ namespace project.ViewModels
                     {
                         if (plcCom.ReadDataFromPLC($"M{i}4"))
                         {
-                            for (int j = 2; j <= 11 ; j++)
+                            for (int j = 2; j <= 11; j++)
                             {
                                 var proop = this.GetType().GetProperty($"aIsBall{j - 1}");
                                 var proop2 = this.GetType().GetProperty($"EnaBall{j - 1}");
@@ -461,7 +462,6 @@ namespace project.ViewModels
             {
                 ResetButtonColors();
                 ResetEna();
-                //aIsBall7 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall7);
                 SelectedAddress = "M80";
                 UserSession.SavePos = "+1";
@@ -491,7 +491,6 @@ namespace project.ViewModels
             {
                 ResetButtonColors();
                 ResetEna();
-                //aIsBall8 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall8);
                 SelectedAddress = "M90";
                 UserSession.SavePos = "+1.5";
@@ -521,7 +520,6 @@ namespace project.ViewModels
             {
                 ResetButtonColors();
                 ResetEna();
-                //aIsBall9 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall9);
                 SelectedAddress = "M100";
                 UserSession.SavePos = "+2";
@@ -551,7 +549,6 @@ namespace project.ViewModels
             {
                 ResetButtonColors();
                 ResetEna();
-                //aIsBall10 = Brushes.LightGreen;
                 NotifyOfPropertyChange(() => aIsBall10);
                 SelectedAddress = "M110";
                 UserSession.SavePos = "+2.5";
@@ -590,7 +587,7 @@ namespace project.ViewModels
                     }
                     else
                     {
-                        if(!checkInsert)
+                        if (!checkInsert)
                         {
                             plcCom.WriteDataToPLC("M376", false);
                             aISAirSP = Brushes.Transparent;
@@ -645,7 +642,6 @@ namespace project.ViewModels
                         aCheckInsertDone();
                     });
                     _aInsertDone.IsBackground = true;
-                    //_aInsertDone.SetApartmentState(ApartmentState.STA);
                     _aInsertDone.Start();
                 }
                 else
@@ -671,7 +667,6 @@ namespace project.ViewModels
                     aINSERTBALL_Enabled = true;
                     _aInsertBool = false;
                     _aInsertBoolDone = true;
-                    //_endtime = DateTime.Now.ToString("T");
                     _Question();
                     break;
                 }
@@ -679,7 +674,7 @@ namespace project.ViewModels
         }
         private void _Question()
         {
-            if(_aInsertBoolDone)
+            if (_aInsertBoolDone)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -691,19 +686,25 @@ namespace project.ViewModels
                         LockInsertBall = true;
                         Thread saveDataSQL = new Thread(() =>
                         {
-                            /*UserModel _userModel = new UserModel
+                            string[] _isSave = DataConfigModel.SaveSQL.Split('=');
+                            bool _boolSQL = Convert.ToBoolean(_isSave[1]);
+                            bool _boolExcel = Convert.ToBoolean(DataConfigModel.SaveExcel);
+                            if(_boolSQL)
                             {
-                                Machine = "LX15",
-                                ID = UserSession.CurrentID,
-                                Name = UserSession.CurrentUser,
-
-                                //ProducName = "Product Test",
-                                Date = DateTime.Now.ToString(),
-                            };
-                            userRepository.Add(_userModel);*/
-
-                            _saveDataExcel.SaveData("LX15", UserSession.CurrentUser, UserSession.CurrentID, UserSession.CurrentAccess,
+                                UserModel _userModel = new UserModel
+                                {
+                                    Machine = "LX15",
+                                    ID = UserSession.CurrentID,
+                                    Name = UserSession.CurrentUser,
+                                    Date = DateTime.Now.ToString(),
+                                };
+                                userRepository.Add(_userModel);
+                            }
+                            if(_boolExcel)
+                            {
+                                _saveDataExcel.SaveData("LX15", UserSession.CurrentUser, UserSession.CurrentID, UserSession.CurrentAccess,
                                 UserSession.CurrentPO, UserSession.SavePos, DateTime.Now.ToString("MM-dd-yyyy"), _starttime, _endtime);
+                            }
                         });
                         saveDataSQL.IsBackground = true;
                         saveDataSQL.Start();
@@ -722,7 +723,7 @@ namespace project.ViewModels
                         return;
                     }
                 });
-            }    
+            }
         }
 
         private void ResetEna()
@@ -733,7 +734,7 @@ namespace project.ViewModels
                 {
                     var proop = this.GetType().GetProperty($"aIsBall{i - 1}");
                     var proop2 = this.GetType().GetProperty($"EnaBall{i - 1}");
-                   
+
                     proop.SetValue(this, Brushes.Transparent);
                     proop2.SetValue(this, false);
                 }

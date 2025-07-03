@@ -62,7 +62,7 @@
                                     <TextBox x:Name="ResultTextBox" Height="{Binding ExpandResult}" Text="{Binding aResults, UpdateSourceTrigger=PropertyChanged}"
                                         AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True"
                                         Style="{StaticResource CustomTextBoxStyle}"
-                                        FontSize="10"/>
+                                        FontSize="18"/>
                                 </StackPanel>
                             </Border>
                         </DockPanel>
@@ -71,44 +71,11 @@
 
             <Border Grid.Row="1">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="70"/>
+                    <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-
-                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="6">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
-                                    <UniformGrid Columns="2" HorizontalAlignment="Stretch">
-                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBlock Text="POSITION (mm)" Style="{StaticResource menuButtonText2}"/>
-                                        </StackPanel>
-                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBlock Text="SPEED (mm/s)" Style="{StaticResource menuButtonText2}"/>
-                                        </StackPanel>
-                                    </UniformGrid>
-                                </Border>
-                                <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
-                                    <UniformGrid Columns="2" HorizontalAlignment="Stretch">
-                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBox Text="{Binding aPosServo, Mode=OneWay}" Height="35" Width="Auto" MinWidth="250" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False" HorizontalContentAlignment="Center"/>
-                                        </StackPanel>
-                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBox Text="{Binding aSpeedServo, Mode=OneWay}" Height="35" Width="Auto" MinWidth="250" Style="{StaticResource CustomTextBoxStyle}" IsEnabled="False" HorizontalContentAlignment="Center"/>
-                                        </StackPanel>
-                                    </UniformGrid>
-                                </Border>
-                            </Grid>
-                        </Border>
-                        <Border Grid.Row="1">
+                        
+                    <Border Grid.Row="1">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="50"/>
@@ -121,49 +88,49 @@
                                 <Border Grid.Row="1">
                                     <UniformGrid Columns="5" HorizontalAlignment="Stretch">
                                         <Button x:Name="SelectPos1_Auto" Background="{Binding aIsBall1}" Margin="20,0,20,0" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall1}">
-                                            <TextBlock Text="-2" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="-2" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos2_Auto" Background="{Binding aIsBall2}" Margin="20,0,20,0" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall2}">
-                                            <TextBlock Text="-1.5" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="-1.5" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos3_Auto" Background="{Binding aIsBall3}" Margin="20,0,20,0" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall3}">
-                                            <TextBlock Text="-1" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="-1" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos4_Auto" Background="{Binding aIsBall4}" Margin="20,0,20,0" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall4}">
-                                            <TextBlock Text="-0.5" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="-0.5" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos5_Auto" Background="{Binding aIsBall5}" Margin="20,0,20,0" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall5}">
-                                            <TextBlock Text="0" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="0" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     </UniformGrid>
                                 </Border>
                                 <Border Grid.Row="3">
                                     <UniformGrid Columns="5" HorizontalAlignment="Stretch">
                                     <Button x:Name="SelectPos6_Auto" Margin="20,0,20,0" Background="{Binding aIsBall6}" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall6}">
-                                            <TextBlock Text="+0.5" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="+0.5" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos7_Auto" Margin="20,0,20,0" Background="{Binding aIsBall7}" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall7}">
-                                            <TextBlock Text="+1" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="+1" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos8_Auto" Margin="20,0,20,0" Background="{Binding aIsBall8}" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall8}">
-                                            <TextBlock Text="+1.5" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="+1.5" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos9_Auto" Margin="20,0,20,0" Background="{Binding aIsBall9}" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall9}">
-                                            <TextBlock Text="+2" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="+2" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     <Button x:Name="SelectPos10_Auto" Margin="20,0,20,0" Background="{Binding aIsBall10}" Style="{StaticResource GradientBorderButton}" IsEnabled="{Binding EnaBall10}">
-                                            <TextBlock Text="+2.5" Style="{StaticResource menuButtonText2}" FontSize="30"/>
+                                            <TextBlock Text="+2.5" Style="{StaticResource menuButtonText2}" FontSize="60"/>
                                         </Button>
                                     </UniformGrid>
                                 </Border>
                                 <Border Grid.Row="100">
                                 <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
                                     <Button x:Name="INSERTBALL_Auto" IsEnabled="{Binding LockInsertBall}" Background="{Binding aIsINSERTBALL}" Height="150" Width="300" Style="{StaticResource GradientBorderButton}">
-                                        <TextBlock Text="INSERT BALL" Style="{StaticResource menuButtonText2}" FontSize="20"/>
+                                        <TextBlock Text="INSERT BALL" Style="{StaticResource menuButtonText2}" FontSize="40"/>
                                     </Button>
                                     <TextBlock Height="150" Width="25"/>
                                     <Button x:Name="AirSPCommand" Background="{Binding aISAirSP}" Height="150" Width="300" Style="{StaticResource GradientBorderButton}">
-                                        <TextBlock Text="AirSP" Style="{StaticResource menuButtonText2}" FontSize="20"/>
+                                        <TextBlock Text="AirSP" Style="{StaticResource menuButtonText2}" FontSize="40"/>
                                     </Button>
                                 </StackPanel>
                                 </Border>

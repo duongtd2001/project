@@ -31,9 +31,11 @@ namespace project.Models
         public static string PersistSecurityInfo { get; set; }
         public static string UserID { get; set; }
         public static string Password { get; set; }
+        public static string SaveSQL { get; set; }
 
         // Save Data
         public static string PathSaveData { get; set; }
         public static string FileSaveData { get; set; }
+        public static string SaveExcel { get; set; }
     }
 }

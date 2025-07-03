@@ -83,8 +83,8 @@
     <!--Menu button icon-->
     <Style x:Key="controlButtonIcon" TargetType="fa:IconImage">
         <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-        <Setter Property="Width" Value="9"/>
-        <Setter Property="Height" Value="9"/>
+        <Setter Property="Width" Value="15"/>
+        <Setter Property="Height" Value="15"/>
     </Style>
     
     <!--3-->
