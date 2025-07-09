@@ -725,22 +725,6 @@ namespace project.ViewModels
                 });
             }
         }
-
-        private void ResetEna()
-        {
-            if (plcCom.CheckConnectPLC())
-            {
-                for (int i = 2; i <= 11; i++)
-                {
-                    var proop = this.GetType().GetProperty($"aIsBall{i - 1}");
-                    var proop2 = this.GetType().GetProperty($"EnaBall{i - 1}");
-
-                    proop.SetValue(this, Brushes.Transparent);
-                    proop2.SetValue(this, false);
-                }
-            }
-        }
-
         private void ResetButtonColors()
         {
             aIsBall1 = Brushes.Transparent;
