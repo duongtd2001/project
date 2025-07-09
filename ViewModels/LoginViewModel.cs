@@ -243,8 +243,6 @@ namespace project.ViewModels
             DataConfigModel.UserID = listSQL[3];
             DataConfigModel.Password = listSQL[4];
             DataConfigModel.SaveSQL = listSQL[5];
-            //string[] _isSave = DataConfigModel.SaveSQL.Split('=');
-            //bool _boolSQL = Convert.ToBoolean(_isSave[1]);
 
             // Data Save Excel
             List<string> listSaveData = IniFile.ReadSectionRawValue(basePathConfig, "SaveDataExcel");
